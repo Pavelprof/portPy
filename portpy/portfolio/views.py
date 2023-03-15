@@ -1,7 +1,8 @@
 from django.http import HttpResponse, HttpResponseNotFound
+from django.shortcuts import render, redirect
 
 def index(request):
-    return HttpResponse("<h1>Index</h1>")
+    return HttpResponse(request, 'assets/index.html')
 
 def portfV(request):
     return HttpResponse("Historical return")
