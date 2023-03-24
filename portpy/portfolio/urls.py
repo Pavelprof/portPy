@@ -2,7 +2,10 @@ from django.urls import path
 from .views import *
 
 urlpatterns = [
-    path("", portfV),
-    path("assets/<slug:assatTicker>/", assetsV),
+    path("", index, name="home"),
+    path("about/", about, name="about"),
+    path("historical/", portfV),
+    path("portfolio/", assetslV),
+    path("portfolio/<slug:assetTicker>/", assetV),
     path("transactions/<int:transactionId>/", transV)
 ]
