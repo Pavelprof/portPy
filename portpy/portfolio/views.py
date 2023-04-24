@@ -13,10 +13,10 @@ def about(request):
 def portfV(request):
     return HttpResponse("Historical return")
 
-assetsList = Assets.objects.all()
+assetsList = Asset.objects.all()
 
 def assetslV(request):
-    assetsList = Assets.objects.all()
+    assetsList = Asset.objects.all()
     return render(request, 'portfolio/assetsl.html', {'title': 'Assets list', 'menu': menu, 'assetsList' : assetsList})
 
 def assetV(request, assetTicker):
