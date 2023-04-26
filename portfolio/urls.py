@@ -7,5 +7,5 @@ urlpatterns = [
     path("historical/", portfV),
     path("portfolio/", assetslV),
     path("portfolio/<slug:assetTicker>/", assetV),
-    path("transactions/<int:transactionId>/", transV)
+    path("deals/<int:dealId>/", transV)
 ]

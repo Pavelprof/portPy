@@ -1,6 +1,7 @@
 from datetime import datetime
-
 from django.db import models
+from simple_history.models import HistoricalRecords
+
 
 class Asset(models.Model):
     ticker = models.CharField(max_length=255)
@@ -8,7 +9,6 @@ class Asset(models.Model):
     asset_name = models.CharField(max_length=255)
     issuer = models.CharField(max_length=255)
     icon = models.ImageField(upload_to="icons/", null=True)
-    payment_currency = models.CharField(max_length=255)
     settlement_currency = models.CharField(max_length=255)
     country = models.CharField(max_length=255)
     asset_type = models.CharField(max_length=255)
@@ -18,21 +18,30 @@ class Asset(models.Model):
     def __str__(self):
         return self.ticker
 
-class Transaction(models.Model):
-    quantity = models.IntegerField()
+class Deal(models.Model):
+    out_asset = models.ForeignKey('Asset', related_name='out_asset', on_delete=models.PROTECT)
+    in_asset = models.ForeignKey('Asset', related_name='in_asset', on_delete=models.PROTECT)
+    out_quantity = models.FloatField()
+    in_quantity = models.IntegerField()
+    lot_exchange_rate = models.FloatField()
     exchange = models.CharField(max_length=255)
-    lot_price = models.FloatField()
-    paid = models.FloatField()
-    fee = models.FloatField(null=True)
-    tax = models.FloatField(null=True)
-    payment_currency = models.CharField(max_length=255)
-    time_transaction = models.DateTimeField(default=datetime.now())
+    note = models.TextField(max_length=10000, null=True)
+    time_deal = models.DateTimeField(default=datetime.now())
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    asset = models.ForeignKey('Asset', on_delete=models.PROTECT)
+    history = HistoricalRecords()
 
     def __str__(self):
-        return self.exchange
+        return str(self.pk)
 
     class Meta:
-        ordering = ['time_transaction']
+        ordering = ['time_deal']
+
+class Portfolio(models.Model):
+    user = models.ForeignKey('auth.User', on_delete=models.PROTECT)
+    portfolio_name = models.CharField(max_length=50)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.portfolio_name
