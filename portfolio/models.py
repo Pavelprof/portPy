@@ -5,13 +5,13 @@ from simple_history.models import HistoricalRecords
 
 class Asset(models.Model):
     ticker = models.CharField(max_length=20)
-    isin = models.CharField(max_length=50, unique=True)
-    asset_name = models.CharField(max_length=50)
+    isin = models.CharField(max_length=100, unique=True)
+    name_asset = models.CharField(max_length=100)
     issuer = models.CharField(max_length=100)
     icon = models.ImageField(upload_to="icons/", null=True)
     currency_influence = models.ForeignKey('Asset', related_name='+', on_delete=models.PROTECT)
     country = models.CharField(max_length=50)
-    asset_type = models.CharField(max_length=50)
+    type_asset = models.CharField(max_length=100)
     is_tradable = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -19,6 +19,7 @@ class Asset(models.Model):
         return self.ticker
 
 class Deal(models.Model):
+    account = models.ForeignKey('Account', on_delete=models.PROTECT)
     out_asset = models.ForeignKey('Asset', related_name='out_asset', on_delete=models.PROTECT)
     in_asset = models.ForeignKey('Asset', related_name='in_asset', on_delete=models.PROTECT)
     out_quantity = models.FloatField()
@@ -26,7 +27,7 @@ class Deal(models.Model):
     lot_exchange_rate = models.FloatField()
     exchange = models.CharField(max_length=50)
     note = models.TextField(max_length=10000, null=True)
-    time_deal = models.DateTimeField(default=datetime.now())
+    time_deal = models.DateTimeField(default=datetime.now)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     history = HistoricalRecords()
@@ -37,21 +38,48 @@ class Deal(models.Model):
     class Meta:
         ordering = ['time_deal']
 
-class Portfolio(models.Model):
-    user = models.ForeignKey('auth.User', on_delete=models.PROTECT)
-    portfolio_name = models.CharField(max_length=50)
+class Transaction(models.Model):
+    account = models.ForeignKey('Account', on_delete=models.PROTECT)
+    deal = models.ForeignKey('Deal', on_delete=models.SET_NULL, null=True)
+    position = models.ForeignKey('Position', on_delete=models.SET_NULL, null=True)
+    asset_transaction = models.ForeignKey('Asset', on_delete=models.PROTECT)
+    quantity_transaction = models.FloatField()
+    type_transaction = models.CharField(max_length=50)
+    time_transaction = models.DateTimeField(default=datetime.now)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.portfolio_name
+        return str(self.pk)
+
+    class Meta:
+        ordering = ['time_transaction']
+
+class Portfolio(models.Model):
+    user = models.ForeignKey('auth.User', on_delete=models.PROTECT)
+    name_portfolio = models.CharField(max_length=50)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name_portfolio
 
 class Account(models.Model):
     portfolio = models.ForeignKey('Portfolio', on_delete=models.SET_NULL, null=True)
-    account_name = models.CharField(max_length=50)
+    name_account = models.CharField(max_length=50)
     broker = models.CharField(max_length=50)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.account_name
+        return self.name_account
+
+class Position(models.Model):
+    asset = models.ForeignKey('Asset', on_delete=models.PROTECT)
+    account = models.ForeignKey('Account', on_delete=models.PROTECT)
+    quantity_position = models.FloatField()
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return str(self.pk)
