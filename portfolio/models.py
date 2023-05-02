@@ -4,6 +4,21 @@ from simple_history.models import HistoricalRecords
 
 
 class Asset(models.Model):
+    BOND = "BD"
+    SHARE = "SE"
+    REIT = "RT"
+    GOOD = "GD"
+    CRYPTO = "CO"
+    CURRENCY = "CY"
+    OTHER = "OR"
+    TYPE_ASSET_CHOICES = [
+        (BOND, "Bond"),
+        (SHARE, "Share"),
+        (REIT, "Reit"),
+        (GOOD, "Good"),
+        (CRYPTO, "Crypto"),
+        (CURRENCY, "Currency"),
+        (OTHER, "Other"),]
     ticker = models.CharField(max_length=20)
     isin = models.CharField(max_length=100, unique=True)
     name_asset = models.CharField(max_length=100)
@@ -11,26 +26,32 @@ class Asset(models.Model):
     icon = models.ImageField(upload_to="icons/", null=True)
     currency_influence = models.ForeignKey('Asset', related_name='+', on_delete=models.PROTECT)
     country = models.CharField(max_length=50)
-    type_asset = models.CharField(max_length=100)
+    type_asset = models.CharField(max_length=2, choices=TYPE_ASSET_CHOICES, default=OTHER)
     is_tradable = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+
     def __str__(self):
         return self.ticker
 
 class Deal(models.Model):
+    class Exchanges(models.IntegerChoices):
+        MOEX = 1
+        SPB = 2
+        Binance = 3
+        NYSE = 4
     account = models.ForeignKey('Account', on_delete=models.PROTECT)
     out_asset = models.ForeignKey('Asset', related_name='out_asset', on_delete=models.PROTECT)
     in_asset = models.ForeignKey('Asset', related_name='in_asset', on_delete=models.PROTECT)
     out_quantity = models.FloatField()
     in_quantity = models.IntegerField()
     lot_exchange_rate = models.FloatField()
-    exchange = models.CharField(max_length=50)
+    exchange = models.IntegerField(choices=Exchanges.choices, default=1)
     note = models.TextField(max_length=10000, null=True)
     time_deal = models.DateTimeField(default=datetime.now)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    history = HistoricalRecords()
+    history = HistoricalRecords(cascade_delete_history=True)
 
     def __str__(self):
         return str(self.pk)
