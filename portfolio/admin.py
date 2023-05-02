@@ -12,6 +12,7 @@ class AssetResource(resources.ModelResource):
         model = Asset
         exclude = ['id']
         import_id_fields = ['isin']
+
 class AssetAdmin(ImportExportActionModelAdmin):
     resource_class = AssetResource
     list_display = ('ticker', 'isin', 'issuer', 'type_asset', 'is_tradable', 'created')
@@ -24,11 +25,17 @@ class DealAdmin(admin.ModelAdmin):
     list_display_links = ('time_deal', 'in_asset')
     search_fields = ('in_asset',)
 
+class TransactionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'type_transaction', 'quantity_transaction', 'asset_transaction')
+    list_display_links = ('id', 'type_transaction')
+    search_fields = ('type_transaction', 'asset_transaction')
+
 class PortfolioAdmin(admin.ModelAdmin):
     list_display = ('pk',)
 class AccountAdmin(admin.ModelAdmin):
     list_display = ('pk',)
 
+admin.site.register(Transaction, TransactionAdmin)
 admin.site.register(Deal, DealAdmin)
 admin.site.register(Asset, AssetAdmin)
 admin.site.register(Portfolio, PortfolioAdmin)

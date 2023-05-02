@@ -23,7 +23,7 @@ class Asset(models.Model):
     isin = models.CharField(max_length=100, unique=True)
     name_asset = models.CharField(max_length=100)
     issuer = models.CharField(max_length=100)
-    icon = models.ImageField(upload_to="icons/", null=True)
+    icon = models.ImageField(upload_to="icons/", null=True, blank=True)
     currency_influence = models.ForeignKey('Asset', related_name='+', on_delete=models.PROTECT)
     country = models.CharField(max_length=50)
     type_asset = models.CharField(max_length=2, choices=TYPE_ASSET_CHOICES, default=OTHER)
@@ -60,16 +60,30 @@ class Deal(models.Model):
         ordering = ['time_deal']
 
 class Transaction(models.Model):
+    class Types_transaction(models.IntegerChoices):
+        FUND = 1
+        PROFIT = 2
+        FEE = 3
+        TAX = 4
+        WITHDRAWAL = 5
     account = models.ForeignKey('Account', on_delete=models.PROTECT)
-    deal = models.ForeignKey('Deal', on_delete=models.SET_NULL, null=True)
-    position = models.ForeignKey('Position', on_delete=models.SET_NULL, null=True)
+    deal = models.ForeignKey('Deal', on_delete=models.SET_NULL, null=True, blank=True)
+    position = models.ForeignKey('Position', on_delete=models.SET_NULL, null=True, blank=True)
     asset_transaction = models.ForeignKey('Asset', on_delete=models.PROTECT)
     quantity_transaction = models.FloatField()
-    type_transaction = models.CharField(max_length=50)
+    type_transaction = models.IntegerField(choices=Types_transaction.choices, default=2)
     time_transaction = models.DateTimeField(default=datetime.now)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+    changed_by = models.ForeignKey('auth.User', on_delete=models.PROTECT)
 
+    @property
+    def _history_user(self):
+        return self.changed_by
+
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
     def __str__(self):
         return str(self.pk)
 
