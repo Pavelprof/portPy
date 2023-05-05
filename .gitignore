@@ -1,4 +1,5 @@
 /ppenv/
 /.idea/
-/portfolio/__pycache__
-/portpy/__pycache__
+/portpy/__pycache__/
+/portfolio/__pycache__/
+/portfolio/migrations/__pycache__/
