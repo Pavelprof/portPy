@@ -75,15 +75,7 @@ class Transaction(models.Model):
     time_transaction = models.DateTimeField(default=datetime.now)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    changed_by = models.ForeignKey('auth.User', on_delete=models.PROTECT)
 
-    @property
-    def _history_user(self):
-        return self.changed_by
-
-    @_history_user.setter
-    def _history_user(self, value):
-        self.changed_by = value
     def __str__(self):
         return str(self.pk)
 
