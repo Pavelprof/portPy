@@ -7,7 +7,6 @@ from import_export import fields
 from import_export.widgets import ForeignKeyWidget
 
 class AssetResource(resources.ModelResource):
-
     class Meta:
         model = Asset
         exclude = ['id']
@@ -20,12 +19,12 @@ class AssetAdmin(ImportExportActionModelAdmin):
     search_fields = ('ticker', 'isin', 'issuer',)
     list_editable = ('is_tradable',)
 
-class DealAdmin(admin.ModelAdmin):
+class DealAdmin(ImportExportActionModelAdmin):
     list_display = ('time_deal', 'in_asset', 'id', 'out_asset')
     list_display_links = ('time_deal', 'in_asset')
     search_fields = ('in_asset',)
 
-class TransactionAdmin(admin.ModelAdmin):
+class TransactionAdmin(ImportExportActionModelAdmin):
     list_display = ('id', 'type_transaction', 'quantity_transaction', 'asset_transaction')
     list_display_links = ('id', 'type_transaction')
     search_fields = ('type_transaction', 'asset_transaction')

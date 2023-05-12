@@ -7,5 +7,6 @@ urlpatterns = [
     path("historical/", portfV),
     path("portfolio/", assetslV),
     path("portfolio/<slug:assetTicker>/", assetV),
-    path("deals/<int:dealId>/", transV)
+    path("deals/<int:dealId>/", transV),
+    path("api/v1/transaction/list/", TransactionAPIView.as_view())
 ]

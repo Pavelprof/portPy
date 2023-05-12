@@ -1,6 +1,14 @@
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render, redirect
+from rest_framework import generics
 from .models import *
+from .serializers import TransactionSerializer
+
+
+class TransactionAPIView(generics.ListAPIView):
+    queryset = Transaction.objects.all()
+    serializer_class = TransactionSerializer
+
 
 menu = ['New asset', 'Analysis', 'Portfolio', 'Deals', 'Historical return']
 
@@ -12,8 +20,6 @@ def about(request):
 
 def portfV(request):
     return HttpResponse("Historical return")
-
-assetsList = Asset.objects.all()
 
 def assetslV(request):
     assetsList = Asset.objects.all()
@@ -27,5 +33,3 @@ def transV(request, dealId):
 
 def pageNotFound(request, exception):
     return HttpResponseNotFound("<h1>Страница не найденана</h1>")
-
-# Create your views here.

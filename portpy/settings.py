@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "portfolio.apps.PortfolioConfig",
     "import_export",
     "simple_history",
+    "rest_framework",
 ]
 
 MIDDLEWARE = [
