@@ -1,13 +1,33 @@
+from django.forms import model_to_dict
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render, redirect
 from rest_framework import generics
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from .models import *
-from .serializers import TransactionSerializer
+from .serializers import DealSerializer
 
+class DealAPIView(APIView):
+    def get(self, request):
+        lst = Deal.objects.all().values()
+        return Response({'deals':list(lst)})
+    def post(self, request):
+        deal_new = Deal.objects.create(
+            account_id =request.data['account_id'],
+            out_asset_id = request.data['out_asset_id'],
+            in_asset_id = request.data['in_asset_id'],
+            out_quantity = request.data['out_quantity'],
+            in_quantity = request.data['in_quantity'],
+            lot_exchange_rate = request.data['lot_exchange_rate'],
+            exchange = request.data['exchange'],
+            note = request.data['note'],
+            time_deal = request.data['time_deal']
+        )
+        return Response({'deal': model_to_dict(deal_new)})
 
-class TransactionAPIView(generics.ListAPIView):
-    queryset = Transaction.objects.all()
-    serializer_class = TransactionSerializer
+#class TransactionAPIView(generics.ListAPIView):
+#    queryset = Transaction.objects.all()
+#    serializer_class = TransactionSerializer
 
 
 menu = ['New asset', 'Analysis', 'Portfolio', 'Deals', 'Historical return']

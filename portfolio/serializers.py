@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from .models import Transaction
-class TransactionSerializer(serializers.ModelSerializer):
+from .models import Deal
+class DealSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Transaction
-        fields = ('id', 'asset_transaction', 'quantity_transaction','type_transaction','time_transaction')
+        model = Deal
+        fields = ('id', 'account', 'out_asset', 'in_asset', 'out_quantity', 'in_quantity', 'time_deal', 'note')
