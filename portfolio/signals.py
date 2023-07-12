@@ -13,14 +13,17 @@ def update_positions_from_transaction(sender, instance, **kwargs):
     try:
         position = Position.objects.get(account=account, asset=asset)
 
-        if instance.type_transaction == Transaction.Types_transaction.FUND:
-            if kwargs.get('signal') == post_delete:
-                position.quantity_position -= quantity
-            else:
-                position.quantity_position += quantity
-        elif instance.type_transaction == Transaction.Types_transaction.PROFIT:
-            pass
+        if kwargs['signal'] == post_delete:
+            position.quantity_position -= quantity
+            position.save()
+        elif kwargs['created']:
+            position.quantity_position += quantity
+            position.save()
+        else:
+            previous_instance = Transaction.history.filter(id=instance.id).order_by('-history_date').first()
+            Position.objects.filter(asset=previous_instance.asset_transaction, account=previous_instance.account).update(quantity_position=models.F('quantity_position') - previous_instance.quantity_transaction)
+            Position.objects.filter(asset=instance.asset_transaction, account=instance.account).update(quantity_position=models.F('quantity_position') + instance.quantity_transaction)
 
-        position.save()
     except Position.DoesNotExist:
         Position.objects.create(account=account, asset=asset, quantity_position=quantity)
+

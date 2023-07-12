@@ -75,6 +75,7 @@ class Transaction(models.Model):
     time_transaction = models.DateTimeField(default=datetime.now)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+    history = HistoricalRecords(cascade_delete_history=True)
 
     def __str__(self):
         return str(self.pk)
