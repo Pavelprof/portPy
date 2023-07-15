@@ -9,22 +9,26 @@ def update_positions_from_transaction(sender, instance, **kwargs):
     asset = instance.asset_transaction
     quantity = instance.quantity_transaction
 
-    try:
+    if kwargs['signal'] == post_delete:
         position = Position.objects.get(account=account, asset=asset)
-
-        if kwargs['signal'] == post_delete:
-            position.quantity_position -= quantity
-            position.save()
-        elif kwargs['created']:
+        position.quantity_position -= quantity
+        position.save()
+    elif kwargs['created']:
+        try:
+            position = Position.objects.get(account=account, asset=asset)
             position.quantity_position += quantity
             position.save()
-        else:
-            new_trans = instance.history.first()
-            prev_inst = new_trans.prev_record
-            prev_pos = Position.objects.filter(account = prev_inst.account, asset = prev_inst.asset_transaction)
-            prev_pos.update(quantity_position = prev_pos.first().quantity_position - prev_inst.quantity_transaction)
-            new_pos = Position.objects.filter(id = position.id)
-            new_pos.update(quantity_position = new_pos.first().quantity_position + new_trans.quantity_transaction)
+        except Position.DoesNotExist:
+            Position.objects.create(account=account, asset=asset, quantity_position=quantity)
+    else:
+        new_trans = instance.history.first()
+        prev_inst = new_trans.prev_record
+        prev_pos = Position.objects.filter(account = prev_inst.account, asset = prev_inst.asset_transaction)
+        prev_pos.update(quantity_position = prev_pos.first().quantity_position - prev_inst.quantity_transaction)
 
-    except Position.DoesNotExist:
-        Position.objects.create(account=account, asset=asset, quantity_position=quantity)
+        try:
+            position = Position.objects.get(account=new_trans.account, asset=new_trans.asset_transaction)
+            position.quantity_position += new_trans.quantity_transaction
+            position.save()
+        except Position.DoesNotExist:
+            Position.objects.create(account=new_trans.account, asset=new_trans.asset_transaction, quantity_position=new_trans.quantity_transaction)
