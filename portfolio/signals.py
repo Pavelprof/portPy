@@ -9,26 +9,22 @@ def update_positions_from_transaction(sender, instance, **kwargs):
     asset = instance.asset_transaction
     quantity = instance.quantity_transaction
 
-    if kwargs['signal'] == post_delete:
-        position = Position.objects.get(account=account, asset=asset)
-        position.quantity_position -= quantity
-        position.save()
-    elif kwargs['created']:
+    def upd_or_crt_pos(account, asset, quantity):
         try:
             position = Position.objects.get(account=account, asset=asset)
             position.quantity_position += quantity
             position.save()
         except Position.DoesNotExist:
             Position.objects.create(account=account, asset=asset, quantity_position=quantity)
+
+    if kwargs['signal'] == post_delete:
+        upd_or_crt_pos(account, asset, -quantity)
+    elif kwargs['created']:
+        upd_or_crt_pos(account, asset, quantity)
     else:
         new_trans = instance.history.first()
-        prev_inst = new_trans.prev_record
-        prev_pos = Position.objects.filter(account = prev_inst.account, asset = prev_inst.asset_transaction)
-        prev_pos.update(quantity_position = prev_pos.first().quantity_position - prev_inst.quantity_transaction)
-
-        try:
-            position = Position.objects.get(account=new_trans.account, asset=new_trans.asset_transaction)
-            position.quantity_position += new_trans.quantity_transaction
-            position.save()
-        except Position.DoesNotExist:
-            Position.objects.create(account=new_trans.account, asset=new_trans.asset_transaction, quantity_position=new_trans.quantity_transaction)
+        prev_trans = new_trans.prev_record
+        # Rollback of previous version of transaction in positions
+        upd_or_crt_pos(prev_trans.account, prev_trans.asset_transaction, -prev_trans.quantity_transaction)
+        # Applying new version of transaction in positions
+        upd_or_crt_pos(new_trans.account, new_trans.asset_transaction, new_trans.quantity_transaction)
