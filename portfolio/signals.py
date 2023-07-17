@@ -46,8 +46,8 @@ def update_positions_from_transaction(sender, instance, **kwargs):
         new_trans = instance.history.first()
         prev_trans = new_trans.prev_record
         # Rollback of the previous version of the transaction in positions
-        upd_or_crt_pos(instance.account, instance.in_asset, -instance.in_quantity)
-        upd_or_crt_pos(instance.account, instance.out_asset, -instance.out_quantity)
+        upd_or_crt_pos(prev_trans.account, prev_trans.in_asset, -prev_trans.in_quantity)
+        upd_or_crt_pos(prev_trans.account, prev_trans.out_asset, -prev_trans.out_quantity)
         # Applying the new version of the transaction in positions
-        upd_or_crt_pos(instance.account, instance.in_asset, instance.in_quantity)
-        upd_or_crt_pos(instance.account, instance.out_asset, instance.out_quantity)
+        upd_or_crt_pos(new_trans.account, new_trans.in_asset, new_trans.in_quantity)
+        upd_or_crt_pos(new_trans.account, new_trans.out_asset, new_trans.out_quantity)
