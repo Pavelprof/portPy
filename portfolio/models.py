@@ -1,7 +1,7 @@
-from datetime import datetime
+from django.core.exceptions import ValidationError
 from django.db import models
 from simple_history.models import HistoricalRecords
-
+from datetime import datetime
 
 class Asset(models.Model):
     BOND = "BD"
@@ -45,13 +45,19 @@ class Deal(models.Model):
     in_asset = models.ForeignKey('Asset', related_name='in_asset', on_delete=models.PROTECT)
     out_quantity = models.FloatField()
     in_quantity = models.IntegerField()
-    lot_exchange_rate = models.FloatField()
+    lot_exchange_rate = models.FloatField(null=True, blank=True)
     exchange = models.IntegerField(choices=Exchanges.choices, default=1)
-    note = models.TextField(max_length=10000, null=True)
+    note = models.TextField(max_length=10000, null=True, blank=True)
     time_deal = models.DateTimeField(default=datetime.now)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     history = HistoricalRecords(cascade_delete_history=True)
+
+    def clean(self):
+        super().clean()
+        attr = 'out_quantity'
+        if type(getattr(self, attr)) in (int, float) and getattr(self, attr) > 0:
+            raise ValidationError({attr : [f'The {attr} must be negative.',]})
 
     def __str__(self):
         return str(self.pk)
@@ -93,7 +99,7 @@ class Portfolio(models.Model):
         return self.name_portfolio
 
 class Account(models.Model):
-    portfolio = models.ForeignKey('Portfolio', on_delete=models.SET_NULL, null=True)
+    portfolio = models.ForeignKey('Portfolio', on_delete=models.SET_NULL, null=True, blank=True)
     name_account = models.CharField(max_length=50)
     broker = models.CharField(max_length=50)
     created = models.DateTimeField(auto_now_add=True)
