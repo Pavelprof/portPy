@@ -55,9 +55,10 @@ class Deal(models.Model):
 
     def clean(self):
         super().clean()
-        attr = 'out_quantity'
-        if type(getattr(self, attr)) in (int, float) and getattr(self, attr) > 0:
-            raise ValidationError({attr : [f'The {attr} must be negative.',]})
+        if type(self.out_quantity) in (int, float) and self.out_quantity > 0:
+            raise ValidationError({'out_quantity' : ['The out_quantity must be negative.',]})
+        if type(self.in_quantity) in (int, float) and self.in_quantity < 0:
+            raise ValidationError({'in_quantity' : ['The in_quantity must be positive.',]})
 
     def __str__(self):
         return str(self.pk)
@@ -82,6 +83,17 @@ class Transaction(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     history = HistoricalRecords(cascade_delete_history=True)
+
+    def clean(self):
+        super().clean()
+        if self.type_transaction in [self.Types_transaction.FUND,
+                                     self.Types_transaction.PROFIT] and type(self.quantity_transaction) in (int, float) and self.quantity_transaction < 0:
+            raise ValidationError(
+                {'quantity_transaction' : ["For 'FUND' and 'PROFIT' transactions, quantity_transaction should be positive.",]})
+        elif self.type_transaction in [self.Types_transaction.FEE, self.Types_transaction.TAX,
+                                       self.Types_transaction.WITHDRAWAL] and type(self.quantity_transaction) in (int, float) and self.quantity_transaction > 0:
+            raise ValidationError(
+                {'quantity_transaction' : ["For 'FEE', 'TAX', and 'WITHDRAWAL' transactions, quantity_transaction should be negative.",]})
 
     def __str__(self):
         return str(self.pk)
