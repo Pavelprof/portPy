@@ -9,6 +9,6 @@ urlpatterns = [
     path("portfolio/<slug:assetTicker>/", assetV),
     path("deals/<int:dealId>/", transV),
     path("api/v1/deal/list/", DealAPIView.as_view()),
-    path('position/', PositionListApiView.as_view(), name='position'),
+    path('api/v1/position/list/', PositionListApiView.as_view(), name='position'),
 
 ]
