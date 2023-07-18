@@ -5,7 +5,11 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import *
-from .serializers import DealSerializer
+from .serializers import DealSerializer, PositionSerializer
+
+class PositionListApiView(generics.ListAPIView):
+    queryset = Position.objects.all()
+    serializer_class = PositionSerializer
 
 class DealAPIView(APIView):
     def get(self, request):
@@ -25,9 +29,6 @@ class DealAPIView(APIView):
         )
         return Response({'deal': model_to_dict(deal_new)})
 
-#class TransactionAPIView(generics.ListAPIView):
-#    queryset = Transaction.objects.all()
-#    serializer_class = TransactionSerializer
 
 
 menu = ['New asset', 'Analysis', 'Portfolio', 'Deals', 'Historical return']
