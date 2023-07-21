@@ -20,7 +20,8 @@ class Asset(models.Model):
         (CURRENCY, "Currency"),
         (OTHER, "Other"),]
     ticker = models.CharField(max_length=20)
-    isin = models.CharField(max_length=100, unique=True)
+    isin = models.CharField(max_length=12, unique=True)
+    figi = models.CharField(max_length=12, unique=True, null=True, blank=True)
     name_asset = models.CharField(max_length=100)
     issuer = models.CharField(max_length=100)
     icon = models.ImageField(upload_to="icons/", null=True, blank=True)
