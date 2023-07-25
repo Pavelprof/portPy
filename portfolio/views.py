@@ -5,10 +5,11 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import *
+from django.db.models import Q
 from .serializers import DealSerializer, PositionSerializer
 
 class PositionListApiView(generics.ListAPIView):
-    queryset = Position.objects.all()
+    queryset = Position.objects.filter(Q(quantity_position__gt=0) | Q(quantity_position__lt=0))
     serializer_class = PositionSerializer
 
 class DealAPIView(APIView):
