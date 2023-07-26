@@ -4,12 +4,14 @@ from .tinkoff_client import get_last_prices
 class DealSerializer(serializers.ModelSerializer):
     class Meta:
         model = Deal
-        fields = ('id', 'account', 'out_asset', 'in_asset', 'out_quantity', 'in_quantity', 'time_deal', 'note')
+        fields = ('id', 'account', 'out_asset', 'in_asset', 'out_quantity',
+                  'in_quantity', 'time_deal', 'note')
 
 class AssetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Asset
-        fields = '__all__'
+        fields = ('id', 'ticker', 'isin', 'figi', 'name_asset', 'issuer', 'country', 'type_asset',
+                  'is_tradable', 'currency_influence', 'created')
 
 class PositionSerializer(serializers.ModelSerializer):
     asset = AssetSerializer()
