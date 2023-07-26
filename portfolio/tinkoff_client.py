@@ -1,8 +1,8 @@
+import os
 from tinkoff.invest import Client
 
-class TinkoffClient:
-    def __init__(self, token):
-        self.token = token
-
-    def get_instrument_price(self, figis):
-        with Client(self.token) as client:
+def get_last_prices(figi_list):
+    TOKEN = os.environ["TIN_API_KEY"]
+    with Client(TOKEN) as client:
+        r = client.market_data.get_last_prices(figi=figi_list)
+        return {price.figi: price for price in r.last_prices}
