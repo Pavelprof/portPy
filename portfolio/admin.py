@@ -25,7 +25,7 @@ class DealAdmin(ImportExportActionModelAdmin):
     search_fields = ('in_asset',)
 
 class TransactionAdmin(ImportExportActionModelAdmin):
-    list_display = ('id', 'type_transaction', 'quantity_transaction', 'asset_transaction')
+    list_display = ('id', 'type_transaction', 'quantity_transaction', 'asset_transaction', 'account')
     list_display_links = ('id', 'type_transaction')
     search_fields = ('type_transaction', 'asset_transaction')
 
