@@ -8,10 +8,12 @@ class DealSerializer(serializers.ModelSerializer):
                   'in_quantity', 'time_deal', 'note')
 
 class AssetSerializer(serializers.ModelSerializer):
+    type_asset_display = serializers.CharField(source='get_type_asset_display', read_only=True)
+
     class Meta:
         model = Asset
         fields = ('id', 'ticker', 'isin', 'figi', 'name_asset', 'issuer', 'country', 'type_asset',
-                  'is_tradable', 'currency_influence', 'created')
+                 'type_asset_display', 'is_tradable', 'currency_influence', 'created')
 
 class PositionSerializer(serializers.ModelSerializer):
     asset = AssetSerializer()
