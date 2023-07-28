@@ -32,7 +32,7 @@ class TransactionAdmin(ImportExportActionModelAdmin):
 class PortfolioAdmin(admin.ModelAdmin):
     list_display = ('pk',)
 class AccountAdmin(admin.ModelAdmin):
-    list_display = ('pk',)
+    list_display = ('pk', 'name_account', 'broker')
 
 admin.site.register(Transaction, TransactionAdmin)
 admin.site.register(Deal, DealAdmin)

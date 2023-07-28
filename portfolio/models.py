@@ -1,7 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.db import models
 from simple_history.models import HistoricalRecords
-from datetime import datetime
+from django.utils import timezone
 
 class Asset(models.Model):
     BOND = "BD"
@@ -49,7 +49,7 @@ class Deal(models.Model):
     lot_exchange_rate = models.FloatField(null=True, blank=True)
     exchange = models.IntegerField(choices=Exchanges.choices, default=1)
     note = models.TextField(max_length=10000, null=True, blank=True)
-    time_deal = models.DateTimeField(default=datetime.now)
+    time_deal = models.DateTimeField(default=timezone.now)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     history = HistoricalRecords(cascade_delete_history=True)
@@ -80,7 +80,7 @@ class Transaction(models.Model):
     asset_transaction = models.ForeignKey('Asset', on_delete=models.PROTECT)
     quantity_transaction = models.FloatField()
     type_transaction = models.IntegerField(choices=Types_transaction.choices, default=2)
-    time_transaction = models.DateTimeField(default=datetime.now)
+    time_transaction = models.DateTimeField(default=timezone.now)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     history = HistoricalRecords(cascade_delete_history=True)
