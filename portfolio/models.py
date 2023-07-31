@@ -22,13 +22,13 @@ class Asset(models.Model):
         (ETF, "Etf"),
         (OTHER, "Other"),]
     ticker = models.CharField(max_length=20)
-    isin = models.CharField(max_length=12, unique=True)
+    isin = models.CharField(max_length=12, unique=True, null=True, blank=True)
     figi = models.CharField(max_length=12, unique=True, null=True, blank=True)
-    name_asset = models.CharField(max_length=100)
-    issuer = models.CharField(max_length=100)
+    name_asset = models.CharField(max_length=100, null=True, blank=True)
+    full_name_asset = models.CharField(max_length=200)
     icon = models.ImageField(upload_to="icons/", null=True, blank=True)
-    currency_influence = models.ForeignKey('Asset', related_name='+', on_delete=models.PROTECT)
-    country = models.CharField(max_length=50)
+    currency_influence = models.ForeignKey('Asset', related_name='+', on_delete=models.PROTECT, null=True, blank=True)
+    country = models.CharField(max_length=50, default='World')
     type_asset = models.CharField(max_length=2, choices=TYPE_ASSET_CHOICES, default=OTHER)
     type_base_asset = models.CharField(max_length=2, choices=TYPE_ASSET_CHOICES, default=OTHER)
     class_code = models.CharField(max_length=20)

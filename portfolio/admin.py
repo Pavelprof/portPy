@@ -14,9 +14,9 @@ class AssetResource(resources.ModelResource):
 
 class AssetAdmin(ImportExportActionModelAdmin):
     resource_class = AssetResource
-    list_display = ('ticker', 'isin', 'issuer', 'type_asset', 'is_tradable', 'created')
+    list_display = ('ticker', 'isin', 'full_name_asset', 'type_asset', 'is_tradable', 'created')
     list_display_links = ('ticker',)
-    search_fields = ('ticker', 'isin', 'issuer',)
+    search_fields = ('ticker', 'isin', 'full_name_asset',)
     list_editable = ('is_tradable',)
 
 class DealAdmin(ImportExportActionModelAdmin):

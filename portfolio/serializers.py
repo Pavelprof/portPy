@@ -12,7 +12,7 @@ class AssetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Asset
-        fields = ('id', 'ticker', 'isin', 'figi', 'name_asset', 'issuer', 'country', 'type_asset',
+        fields = ('id', 'ticker', 'isin', 'figi', 'name_asset', 'full_name_asset', 'country', 'type_asset',
                  'type_asset_display', 'is_tradable', 'currency_influence', 'created')
 
 class PositionSerializer(serializers.ModelSerializer):
