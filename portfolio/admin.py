@@ -10,7 +10,7 @@ class AssetResource(resources.ModelResource):
     class Meta:
         model = Asset
         exclude = ['id']
-        import_id_fields = ['isin']
+        import_id_fields = ['ticker']
 
 class AssetAdmin(ImportExportActionModelAdmin):
     resource_class = AssetResource

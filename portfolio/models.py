@@ -10,6 +10,7 @@ class Asset(models.Model):
     GOOD = "GD"
     CRYPTO = "CO"
     CURRENCY = "CY"
+    ETF = "ET"
     OTHER = "OR"
     TYPE_ASSET_CHOICES = [
         (BOND, "Bond"),
@@ -18,6 +19,7 @@ class Asset(models.Model):
         (GOOD, "Good"),
         (CRYPTO, "Crypto"),
         (CURRENCY, "Currency"),
+        (ETF, "Etf"),
         (OTHER, "Other"),]
     ticker = models.CharField(max_length=20)
     isin = models.CharField(max_length=12, unique=True)
@@ -28,6 +30,8 @@ class Asset(models.Model):
     currency_influence = models.ForeignKey('Asset', related_name='+', on_delete=models.PROTECT)
     country = models.CharField(max_length=50)
     type_asset = models.CharField(max_length=2, choices=TYPE_ASSET_CHOICES, default=OTHER)
+    type_base_asset = models.CharField(max_length=2, choices=TYPE_ASSET_CHOICES, default=OTHER)
+    class_code = models.CharField(max_length=20)
     is_tradable = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
