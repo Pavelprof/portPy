@@ -28,7 +28,7 @@ class Asset(models.Model):
     full_name_asset = models.CharField(max_length=200)
     icon = models.ImageField(upload_to="icons/", null=True, blank=True)
     currency_influence = models.ForeignKey('Asset', related_name='+', on_delete=models.PROTECT, null=True, blank=True)
-    country = models.CharField(max_length=50, default='World')
+    country = models.CharField(max_length=40, default='World')
     type_asset = models.CharField(max_length=2, choices=TYPE_ASSET_CHOICES, default=OTHER)
     type_base_asset = models.CharField(max_length=2, choices=TYPE_ASSET_CHOICES, default=OTHER)
     class_code = models.CharField(max_length=20, null=True, blank=True)
