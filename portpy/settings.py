@@ -82,13 +82,24 @@ WSGI_APPLICATION = "portpy.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "portpy_db",
-        "USER": "portpy",
-        "PASSWORD": "sdfwer234",
-        "HOST": "localhost",
-        "PORT": "5432"
+        "NAME": os.environ.get("DB_NAME"),
+        "USER": os.environ.get("DB_USER"),
+        "PASSWORD": os.environ.get("DB_PASS"),
+        "HOST": os.environ.get("DB_HOST"),
+        "PORT": os.environ.get("DB_PORT"),
     }
 }
+
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": os.environ["DB_NAME"],
+#         "USER": os.environ["DB_USER"],
+#         "PASSWORD": os.environ["DB_PASS"],
+#         "HOST": os.environ["DB_HOST"],
+#         "PORT": os.environ["DB_PORT"],
+#     }
+# }
 
 
 # Password validation

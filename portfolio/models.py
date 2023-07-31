@@ -31,7 +31,7 @@ class Asset(models.Model):
     country = models.CharField(max_length=50, default='World')
     type_asset = models.CharField(max_length=2, choices=TYPE_ASSET_CHOICES, default=OTHER)
     type_base_asset = models.CharField(max_length=2, choices=TYPE_ASSET_CHOICES, default=OTHER)
-    class_code = models.CharField(max_length=20)
+    class_code = models.CharField(max_length=20, null=True, blank=True)
     is_tradable = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)

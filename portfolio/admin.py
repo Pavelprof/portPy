@@ -9,14 +9,14 @@ from import_export.widgets import ForeignKeyWidget
 class AssetResource(resources.ModelResource):
     class Meta:
         model = Asset
-        exclude = ['id']
+        exclude = ['created', 'updated']
         import_id_fields = ['ticker']
 
 class AssetAdmin(ImportExportActionModelAdmin):
     resource_class = AssetResource
-    list_display = ('ticker', 'isin', 'full_name_asset', 'type_asset', 'is_tradable', 'created')
-    list_display_links = ('ticker',)
-    search_fields = ('ticker', 'isin', 'full_name_asset',)
+    list_display = ('id', 'ticker', 'figi', 'isin', 'full_name_asset', 'type_asset', 'is_tradable', 'created')
+    list_display_links = ('id', 'ticker',)
+    search_fields = ('ticker', 'isin', 'full_name_asset', 'name_asset', 'figi')
     list_editable = ('is_tradable',)
 
 class DealAdmin(ImportExportActionModelAdmin):
