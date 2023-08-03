@@ -9,7 +9,7 @@ from django.db.models import Q
 from .serializers import DealSerializer, PositionSerializer
 
 class PositionListApiView(generics.ListAPIView):
-    queryset = Position.objects.filter(Q(quantity_position__gt=0) | Q(quantity_position__lt=0))
+    queryset = Position.objects.filter((Q(quantity_position__gt=0) | Q(quantity_position__lt=0)))
     serializer_class = PositionSerializer
 
 class DealAPIView(APIView):

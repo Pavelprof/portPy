@@ -21,7 +21,7 @@ class Asset(models.Model):
         (CURRENCY, "Currency"),
         (ETF, "Etf"),
         (OTHER, "Other"),]
-    ticker = models.CharField(max_length=20)
+    ticker = models.CharField(max_length=20, unique=True)
     isin = models.CharField(max_length=12, unique=True, null=True, blank=True)
     figi = models.CharField(max_length=12, unique=True, null=True, blank=True)
     name_asset = models.CharField(max_length=100, null=True, blank=True)
