@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from simple_history.models import HistoricalRecords
 from django.utils import timezone
+from django_countries.fields import CountryField
 
 class Asset(models.Model):
     BOND = "BD"
@@ -28,7 +29,7 @@ class Asset(models.Model):
     full_name_asset = models.CharField(max_length=200)
     icon = models.ImageField(upload_to="icons/", null=True, blank=True)
     currency_influence = models.ForeignKey('Asset', related_name='+', on_delete=models.PROTECT, null=True, blank=True)
-    country = models.CharField(max_length=40, default='World')
+    country_asset = CountryField(null=True, blank=True, default='US')
     type_asset = models.CharField(max_length=2, choices=TYPE_ASSET_CHOICES, default=OTHER)
     type_base_asset = models.CharField(max_length=2, choices=TYPE_ASSET_CHOICES, default=OTHER)
     class_code = models.CharField(max_length=20, null=True, blank=True)
@@ -118,6 +119,7 @@ class Portfolio(models.Model):
 class Account(models.Model):
     portfolio = models.ForeignKey('Portfolio', on_delete=models.SET_NULL, null=True, blank=True)
     name_account = models.CharField(max_length=50)
+    country_account = CountryField(null=True, blank=True, default='US')
     broker = models.CharField(max_length=50)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
