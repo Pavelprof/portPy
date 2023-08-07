@@ -50,7 +50,7 @@ class Deal(models.Model):
     out_asset = models.ForeignKey('Asset', related_name='out_asset', on_delete=models.PROTECT)
     in_asset = models.ForeignKey('Asset', related_name='in_asset', on_delete=models.PROTECT)
     out_quantity = models.FloatField()
-    in_quantity = models.IntegerField()
+    in_quantity = models.FloatField()
     lot_exchange_rate = models.FloatField(null=True, blank=True)
     exchange = models.IntegerField(choices=Exchanges.choices, default=1)
     note = models.TextField(max_length=10000, null=True, blank=True)

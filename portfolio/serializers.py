@@ -1,18 +1,32 @@
 from rest_framework import serializers
-from .models import Deal, Position, Asset
+from rest_framework.renderers import JSONRenderer
+
+from .models import Deal, Position, Asset, Account
 from .tinkoff_client import get_last_prices
-class DealSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Deal
-        fields = ('id', 'account', 'out_asset', 'in_asset', 'out_quantity',
-                  'in_quantity', 'time_deal', 'note')
+
+class DealSerializer(serializers.Serializer):
+    account = serializers.IntegerField()
+    out_asset = serializers.IntegerField()
+    in_asset = serializers.IntegerField()
+    out_quantity = serializers.FloatField()
+    in_quantity = serializers.FloatField()
+    lot_exchange_rate = serializers.FloatField()
+    exchange = serializers.IntegerField()
+    note = serializers.CharField()
+    time_deal = serializers.DateTimeField()
+
+def encode():
+    model = Deal(account=Account.objects.get(id=2), out_asset=Asset.objects.get(id=2), in_asset=Asset.objects.get(id=1), out_quantity=2, in_quantity=2, exchange=2, note=2)
+    model_sr = DealSerializer(model)
+    print(model_sr.data, type(model_sr.data), sep='\n')
+    json = JSONRenderer().render(model_sr.data)
+    print(json)
 
 class AssetSerializer(serializers.ModelSerializer):
     type_asset_display = serializers.CharField(source='get_type_asset_display', read_only=True)
-
     class Meta:
         model = Asset
-        fields = ('id', 'ticker', 'isin', 'figi', 'name_asset', 'full_name_asset', 'country', 'type_asset',
+        fields = ('id', 'ticker', 'isin', 'figi', 'name_asset', 'full_name_asset', 'type_asset',
                  'type_asset_display', 'is_tradable', 'currency_influence', 'created')
 
 class PositionSerializer(serializers.ModelSerializer):
