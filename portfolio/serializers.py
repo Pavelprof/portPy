@@ -1,26 +1,12 @@
 from rest_framework import serializers
-from rest_framework.renderers import JSONRenderer
-
 from .models import Deal, Position, Asset, Account
 from .tinkoff_client import get_last_prices
 
-class DealSerializer(serializers.Serializer):
-    account = serializers.IntegerField()
-    out_asset = serializers.IntegerField()
-    in_asset = serializers.IntegerField()
-    out_quantity = serializers.FloatField()
-    in_quantity = serializers.FloatField()
-    lot_exchange_rate = serializers.FloatField()
-    exchange = serializers.IntegerField()
-    note = serializers.CharField()
-    time_deal = serializers.DateTimeField()
-
-def encode():
-    model = Deal(account=Account.objects.get(id=2), out_asset=Asset.objects.get(id=2), in_asset=Asset.objects.get(id=1), out_quantity=2, in_quantity=2, exchange=2, note=2)
-    model_sr = DealSerializer(model)
-    print(model_sr.data, type(model_sr.data), sep='\n')
-    json = JSONRenderer().render(model_sr.data)
-    print(json)
+class DealSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Deal
+        fields = ('account', 'out_asset', 'out_quantity', 'in_asset', 'in_quantity',
+                  'exchange', 'note', 'time_deal', 'created', 'updated')
 
 class AssetSerializer(serializers.ModelSerializer):
     type_asset_display = serializers.CharField(source='get_type_asset_display', read_only=True)

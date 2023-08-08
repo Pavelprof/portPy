@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import *
 from django.db.models import Q
-from .serializers import PositionSerializer
+from .serializers import PositionSerializer, DealSerializer
 
 class PositionListApiView(generics.ListAPIView):
     queryset = Position.objects.filter((Q(quantity_position__gt=0) | Q(quantity_position__lt=0)) & ~Q(asset__figi=None))
@@ -34,23 +34,23 @@ class AssetAPIView (APIView):
         )
         return Response({'asset': model_to_dict(asset_new)})
 
-# class DealAPIView(APIView):
-#     def get(self, request):
-#         lst = Deal.objects.all().values()
-#         return Response({'deals':list(lst)})
-#     def post(self, request):
-#         deal_new = Deal.objects.create(
-#             account_id =request.data['account_id'],
-#             out_asset_id = request.data['out_asset_id'],
-#             in_asset_id = request.data['in_asset_id'],
-#             out_quantity = request.data['out_quantity'],
-#             in_quantity = request.data['in_quantity'],
-#             lot_exchange_rate = request.data['lot_exchange_rate'],
-#             exchange = request.data['exchange'],
-#             note = request.data['note'],
-#             time_deal = request.data['time_deal']
-#         )
-#         return Response({'deal': model_to_dict(deal_new)})
+class DealAPIView(APIView):
+    def get(self, request):
+        dls = Deal.objects.all()
+        return Response({'deals': DealSerializer(dls, many=True).data})
+    def post(self, request):
+        deal_new = Deal.objects.create(
+            account_id =request.data['account_id'],
+            out_asset_id = request.data['out_asset_id'],
+            in_asset_id = request.data['in_asset_id'],
+            out_quantity = request.data['out_quantity'],
+            in_quantity = request.data['in_quantity'],
+            lot_exchange_rate = request.data['lot_exchange_rate'],
+            exchange = request.data['exchange'],
+            note = request.data['note'],
+            time_deal = request.data['time_deal']
+        )
+        return Response({'deal': model_to_dict(deal_new)})
 
 
 
