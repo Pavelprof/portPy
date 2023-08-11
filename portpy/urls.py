@@ -16,7 +16,7 @@ Including another URLconf
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
-from portfolio.views import index, pageNotFound
+from portfolio.views import pageNotFound
 from portpy import settings
 
 urlpatterns = [

@@ -34,46 +34,38 @@ class AssetAPIView (APIView):
         )
         return Response({'asset': model_to_dict(asset_new)})
 
-class DealAPIView(APIView):
-    def get(self, request):
-        dls = Deal.objects.all()
-        return Response({'deals': DealSerializer(dls, many=True).data})
-    def post(self, request):
-        deal_new = Deal.objects.create(
-            account_id =request.data['account_id'],
-            out_asset_id = request.data['out_asset_id'],
-            in_asset_id = request.data['in_asset_id'],
-            out_quantity = request.data['out_quantity'],
-            in_quantity = request.data['in_quantity'],
-            lot_exchange_rate = request.data['lot_exchange_rate'],
-            exchange = request.data['exchange'],
-            note = request.data['note'],
-            time_deal = request.data['time_deal']
-        )
-        return Response({'deal': model_to_dict(deal_new)})
+class DealAPIView(generics.ListCreateAPIView):
+    queryset = Deal.objects.all()
+    serializer_class = DealSerializer
+
+class DealAPIUpdate(generics.UpdateAPIView):
+    # Lazy request. Only one record, not all
+    queryset = Deal.objects.all()
+    serializer_class = DealSerializer
+
+class DealAPIDetailView(generics.RetrieveUpdateDestroyAPIView):
+    # Lazy request. Only one record, not all
+    queryset = Deal.objects.all()
+    serializer_class = DealSerializer
 
 
-
-menu = ['New asset', 'Analysis', 'Portfolio', 'Deals', 'Historical return']
-
-def index(request):
-    return render(request, 'portfolio/index.html', {'title': 'Authentification', 'menu': menu})
-
-def about(request):
-    return render(request, 'portfolio/about.html', {'title': 'About', 'menu': menu})
-
-def portfV(request):
-    return HttpResponse("Historical return")
-
-def assetslV(request):
-    assetsList = Asset.objects.all()
-    return render(request, 'portfolio/assetsl.html', {'title': 'Assets list', 'menu': menu, 'assetsList' : assetsList})
-
-def assetV(request, assetTicker):
-    return HttpResponse(f"<h1>Asset</h1><p>{assetTicker}</p>")
-
-def transV(request, dealId):
-    return HttpResponse(f"<h1>Deals list</h1><p>{dealId}</p>")
+# class DealAPIView(APIView):
+#
+#     def get(self, request):
+#         dls = Deal.objects.all()
+#         return Response({'deals': DealSerializer(dls, many=True).data})
+#     def post(self, request):
+#         deal_new = Deal.objects.create(
+#             account_id =request.data['account'],
+#             out_asset_id = request.data['out_asset'],
+#             in_asset_id = request.data['in_asset'],
+#             out_quantity = request.data['out_quantity'],
+#             in_quantity = request.data['in_quantity'],
+#             exchange = request.data['exchange'],
+#             note = request.data['note'],
+#             time_deal = request.data['time_deal']
+#         )
+#         return Response({'deal': model_to_dict(deal_new)})
 
 def pageNotFound(request, exception):
     return HttpResponseNotFound("<h1>Страница не найденана</h1>")

@@ -2,14 +2,9 @@ from django.urls import path
 from .views import *
 
 urlpatterns = [
-    path("", index, name="home"),
-    path("about/", about, name="about"),
-    path("historical/", portfV),
-    path("portfolio/", assetslV),
-    path("portfolio/<slug:assetTicker>/", assetV),
-    # path("deals/<int:dealId>/", transV),
-    path("api/v1/deal/list/", DealAPIView.as_view()),
     path('api/v1/position/list/', PositionListApiView.as_view(), name='position'),
     path("api/v1/asset/list/", AssetAPIView.as_view()),
-
+    path("api/v1/deal/list/", DealAPIView.as_view()),
+    path("api/v1/deal/list/<int:pk>/", DealAPIUpdate.as_view()),
+    path("api/v1/deal/<int:pk>/", DealAPIDetailView.as_view())
 ]
