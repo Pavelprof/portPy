@@ -3,6 +3,7 @@ from .models import Deal, Position, Asset, Account
 from .tinkoff_client import get_last_prices
 
 class DealSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Deal
         fields = ('account', 'out_asset', 'out_quantity', 'in_asset', 'in_quantity',
