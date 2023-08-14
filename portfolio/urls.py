@@ -1,10 +1,18 @@
-from django.urls import path
+from django.urls import path, include
 from .views import *
+from rest_framework import routers
+
+routerPosition = routers.SimpleRouter()
+routerPosition.register(r'position', DealViewSet)
+
+routerAsset = routers.SimpleRouter()
+routerAsset.register(r'asset', DealViewSet)
+
+routerDeal = routers.SimpleRouter()
+routerDeal.register(r'deal', DealViewSet)
 
 urlpatterns = [
-    path('api/v1/position/list/', PositionListApiView.as_view(), name='position'),
-    path("api/v1/asset/list/", AssetAPIView.as_view()),
-    path("api/v1/deal/list/", DealAPIView.as_view()),
-    path("api/v1/deal/list/<int:pk>/", DealAPIUpdate.as_view()),
-    path("api/v1/deal/<int:pk>/", DealAPIDetailView.as_view())
+    path('api/v1/', include(routerPosition.urls)),
+    path("api/v1/", include(routerAsset.urls)),
+    path("api/v1/", include(routerDeal.urls)) # api/v1/deal/
 ]
