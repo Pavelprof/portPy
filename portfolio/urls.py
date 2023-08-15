@@ -3,10 +3,10 @@ from .views import *
 from rest_framework import routers
 
 routerPosition = routers.SimpleRouter()
-routerPosition.register(r'position', DealViewSet)
+routerPosition.register(r'position', PositionViewSet)
 
 routerAsset = routers.SimpleRouter()
-routerAsset.register(r'asset', DealViewSet)
+routerAsset.register(r'asset', AssetViewSet)
 
 routerDeal = routers.SimpleRouter()
 routerDeal.register(r'deal', DealViewSet)
