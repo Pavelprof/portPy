@@ -25,5 +25,10 @@ class DealViewSet(viewsets.ModelViewSet):
     serializer_class = DealSerializer
     permission_classes = (IsOwner,)
 
+class TransactionViewSet(viewsets.ModelViewSet):
+    queryset = Transaction.objects.all()
+    serializer_class = TransactionSerializer
+    permission_classes = (IsOwner,)
+
 def pageNotFound(request, exception):
     return HttpResponseNotFound("<h1>Страница не найденана</h1>")

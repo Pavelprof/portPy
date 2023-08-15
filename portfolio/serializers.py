@@ -1,9 +1,14 @@
 from rest_framework import serializers
-from .models import Deal, Position, Asset, Account
+from .models import Deal, Position, Asset, Transaction
 from .tinkoff_client import get_last_prices
 
-class DealSerializer(serializers.ModelSerializer):
+class TransactionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Transaction
+        fields = ('account', 'deal', 'position', 'asset_transaction', 'quantity_transaction',
+                  'type_transaction', 'time_transaction', 'created', 'updated')
 
+class DealSerializer(serializers.ModelSerializer):
     class Meta:
         model = Deal
         fields = ('account', 'out_asset', 'out_quantity', 'in_asset', 'in_quantity',
