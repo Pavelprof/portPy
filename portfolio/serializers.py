@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Deal, Position, Asset, Transaction
-from .tinkoff_client import get_last_prices
+from .quotes_provider import get_quotes_from_tinkoff
 
 class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -33,7 +33,7 @@ class PositionSerializer(serializers.ModelSerializer):
 
     def get_price(self, obj):
         figi_list = [obj.asset.figi]
-        prices = get_last_prices(figi_list)
+        prices = get_quotes_from_tinkoff(figi_list)
         price_info = prices.get(obj.asset.figi)
         if price_info:
             price = price_info.price.units + price_info.price.nano / 1e9
