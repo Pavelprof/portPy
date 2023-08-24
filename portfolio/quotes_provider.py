@@ -1,13 +1,14 @@
 import os
 from tinkoff.invest import Client
 import requests
+import yfinance as yf
 
 def get_quotes_from_tinkoff(figi_list):
     TOKEN = os.environ["TIN_API_KEY"]
     with Client(TOKEN) as client:
         r = client.market_data.get_last_prices(figi=figi_list)
-        quotes = {price.figi: price for price in r.last_prices}
-        return quotes
+        tf_quotes = {price.figi: price for price in r.last_prices}
+        return tf_quotes
 
 def get_quotes_from_moex(ticker_list):
     def get_moex_quote(ticker):
@@ -23,25 +24,28 @@ def get_quotes_from_moex(ticker_list):
             return bid_price if bid_price is not None else last_price
         return None
 
-    quotes = {}
+    mx_quotes = {}
     for ticker in ticker_list:
-        quotes[ticker] = get_moex_quote(ticker)
+        mx_quotes[ticker] = get_moex_quote(ticker)
 
-    return quotes
+    return mx_quotes
 
 
 def get_quotes_from_binance(ticker_list):
     base_url = "https://api.binance.com/api/v3/ticker/price"
-    quotes = {}
+    bc_quotes = {}
 
     for ticker in ticker_list:
         response = requests.get(base_url, params={"symbol": ticker})
         data = response.json()
         if 'symbol' in data and 'price' in data:
-            quotes[data['symbol']] = float(data['price'])
+            bc_quotes[data['symbol']] = float(data['price'])
 
-    return quotes
+    return bc_quotes
 
 
 def get_quotes_from_yfinance(ticker_list):
-    pass
+    tkrs = yf.download(ticker_list, period="1m")
+    current_prices_series = tkrs['Adj Close'].iloc[-1]
+    yf_quotes = current_prices_series.to_dict()
+    return yf_quotes
