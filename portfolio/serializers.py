@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Deal, Position, Asset, Transaction
-from .quotes_provider import get_quotes_from_tinkoff
+from .quotes_provider import *
 
 class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -32,13 +32,29 @@ class PositionSerializer(serializers.ModelSerializer):
         fields = ('asset', 'account', 'quantity_position', 'price', 'total_value')
 
     def get_price(self, obj):
-        figi_list = [obj.asset.figi]
-        prices = get_quotes_from_tinkoff(figi_list)
-        price_info = prices.get(obj.asset.figi)
-        if price_info:
-            price = price_info.price.units + price_info.price.nano / 1e9
-            return price
-        return None
+        price = None
+        country = obj.account.country_account
+        asset = obj.asset
+
+        if country == "RU":
+            if asset.figi:
+                figi_prices = get_quotes_from_tinkoff([asset.figi])
+                if figi_prices and figi_prices.get(asset.figi) not in [0, None]:
+                    price = figi_prices[asset.figi]
+                else:
+                    moex_prices = get_quotes_from_moex([asset.ticker])
+                    price = moex_prices.get(asset.ticker)
+            else:
+                moex_prices = get_quotes_from_moex([asset.ticker])
+                price = moex_prices.get(asset.ticker)
+        elif not country:
+            binance_prices = get_quotes_from_binance([asset.ticker])
+            price = binance_prices.get(asset.ticker)
+        else:
+            yfinance_prices = get_quotes_from_yfinance([asset.ticker])
+            price = yfinance_prices.get(asset.ticker)
+
+        return price
 
     def get_total_value(self, obj):
         price = self.get_price(obj)

@@ -7,7 +7,8 @@ def get_quotes_from_tinkoff(figi_list):
     TOKEN = os.environ["TIN_API_KEY"]
     with Client(TOKEN) as client:
         r = client.market_data.get_last_prices(figi=figi_list)
-        tf_quotes = {price.figi: price for price in r.last_prices}
+        tf_quote_objects = {price.figi: price for price in r.last_prices}
+        tf_quotes = {k: v.price.units + v.price.nano * 1e-9 for k, v in tf_quote_objects.items()}
         return tf_quotes
 
 def get_quotes_from_moex(ticker_list):
