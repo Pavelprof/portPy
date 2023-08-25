@@ -37,10 +37,10 @@ def get_quotes_from_binance(ticker_list):
     bc_quotes = {}
 
     for ticker in ticker_list:
-        response = requests.get(base_url, params={"symbol": ticker})
+        response = requests.get(base_url, params={"symbol": ticker+'RUB'})
         data = response.json()
         if 'symbol' in data and 'price' in data:
-            bc_quotes[data['symbol']] = float(data['price'])
+            bc_quotes[ticker] = float(data['price'])
 
     return bc_quotes
 

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Deal, Position, Asset, Transaction
-from .quotes_provider import *
+from .api_services import *
+
 
 class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -8,22 +9,25 @@ class TransactionSerializer(serializers.ModelSerializer):
         fields = ('account', 'deal', 'position', 'asset_transaction', 'quantity_transaction',
                   'type_transaction', 'time_transaction', 'created', 'updated')
 
+
 class DealSerializer(serializers.ModelSerializer):
     class Meta:
         model = Deal
         fields = ('account', 'out_asset', 'out_quantity', 'in_asset', 'in_quantity',
                   'exchange', 'note', 'time_deal', 'created', 'updated')
 
+
 class AssetSerializer(serializers.ModelSerializer):
     type_asset_display = serializers.CharField(source='get_type_asset_display', read_only=True)
+
     class Meta:
         model = Asset
         fields = ('id', 'ticker', 'isin', 'figi', 'name_asset', 'full_name_asset', 'type_asset',
-                 'type_asset_display', 'is_tradable', 'currency_influence', 'created')
+                  'type_asset_display', 'is_tradable', 'currency_influence', 'created')
+
 
 class PositionSerializer(serializers.ModelSerializer):
     asset = AssetSerializer()
-
     price = serializers.SerializerMethodField()
     total_value = serializers.SerializerMethodField()
 
@@ -49,7 +53,7 @@ class PositionSerializer(serializers.ModelSerializer):
             else:
                 moex_prices = get_quotes_from_moex([asset.ticker])
                 price = moex_prices.get(asset.ticker)
-        elif not country:
+        elif country == None:
             binance_prices = get_quotes_from_binance([asset.ticker])
             price = binance_prices.get(asset.ticker)
         else:
