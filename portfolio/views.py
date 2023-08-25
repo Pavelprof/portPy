@@ -11,7 +11,7 @@ from .permissions import isAdminOrReadOnly, IsOwner
 from .serializers import *
 
 class PositionViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Position.objects.filter((Q(quantity_position__gt=0) | Q(quantity_position__lt=0)) & ~Q(asset__figi=None))
+    queryset = Position.objects.filter((Q(quantity_position__gt=0) | Q(quantity_position__lt=0)) & ~Q(asset__ticker='RUB'))
     serializer_class = PositionSerializer
     permission_classes = (IsOwner,)
 

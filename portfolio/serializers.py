@@ -36,7 +36,9 @@ class PositionSerializer(serializers.ModelSerializer):
         country = obj.account.country_account
         asset = obj.asset
 
-        if country == "RU":
+        if not asset.is_tradable:
+            pass
+        elif country == "RU":
             if asset.figi:
                 figi_prices = get_quotes_from_tinkoff([asset.figi])
                 if figi_prices and figi_prices.get(asset.figi) not in [0, None]:
