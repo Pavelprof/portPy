@@ -19,51 +19,32 @@ class DealSerializer(serializers.ModelSerializer):
 
 class AssetSerializer(serializers.ModelSerializer):
     type_asset_display = serializers.CharField(source='get_type_asset_display', read_only=True)
+    price = serializers.SerializerMethodField()
+    currency = serializers.SerializerMethodField()
 
     class Meta:
         model = Asset
-        fields = ('id', 'ticker', 'isin', 'figi', 'name_asset', 'full_name_asset', 'type_asset',
+        fields = ('id', 'ticker', 'isin', 'figi', 'name_asset', 'full_name_asset', 'price', 'currency', 'type_asset',
                   'type_asset_display', 'is_tradable', 'currency_influence', 'created')
+
+    def get_price(self, obj):
+        prices_and_currencies = self.context.get('prices_and_currencies', {})
+        return prices_and_currencies.get(obj.id, {}).get('price', None)
+
+    def get_currency(self, obj):
+        prices_and_currencies = self.context.get('prices_and_currencies', {})
+        return prices_and_currencies.get(obj.id, {}).get('currency', None)
 
 
 class PositionSerializer(serializers.ModelSerializer):
     asset = AssetSerializer()
-    price = serializers.SerializerMethodField()
     total_value = serializers.SerializerMethodField()
 
     class Meta:
         model = Position
-        fields = ('asset', 'account', 'quantity_position', 'price', 'total_value')
-
-    def get_price(self, obj):
-        price = None
-        country = obj.account.country_account
-        asset = obj.asset
-
-        if not asset.is_tradable:
-            pass
-        elif country == "RU":
-            if asset.figi:
-                figi_prices = get_quotes_from_tinkoff([asset.figi])
-                if figi_prices and figi_prices.get(asset.figi) not in [0, None]:
-                    price = figi_prices[asset.figi]
-                else:
-                    moex_prices = get_quotes_from_moex([asset.ticker])
-                    price = moex_prices.get(asset.ticker)
-            else:
-                moex_prices = get_quotes_from_moex([asset.ticker])
-                price = moex_prices.get(asset.ticker)
-        elif country == None:
-            binance_prices = get_quotes_from_binance([asset.ticker])
-            price = binance_prices.get(asset.ticker)
-        else:
-            yfinance_prices = get_quotes_from_yfinance([asset.ticker])
-            price = yfinance_prices.get(asset.ticker)
-
-        return price
+        fields = ('asset', 'account', 'quantity_position', 'total_value')
 
     def get_total_value(self, obj):
-        price = self.get_price(obj)
-        if price is not None:
-            return obj.quantity_position * price
-        return None
+        prices_and_currencies = self.context.get('prices_and_currencies', {})
+        price = prices_and_currencies.get(obj.asset.id, {}).get('price', 0)
+        return price * obj.quantity_position

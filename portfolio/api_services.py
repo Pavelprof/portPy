@@ -5,11 +5,16 @@ import yfinance as yf
 
 def get_quotes_from_tinkoff(figi_list):
     TOKEN = os.environ["TIN_API_KEY"]
+    tf_quotes = {}
     with Client(TOKEN) as client:
         r = client.market_data.get_last_prices(figi=figi_list)
-        tf_quote_objects = {price.figi: price for price in r.last_prices}
-        tf_quotes = {k: v.price.units + v.price.nano * 1e-9 for k, v in tf_quote_objects.items()}
-        return tf_quotes
+
+        for price_object in r.last_prices:
+            figi = price_object.figi
+            price = price_object.price.units + price_object.price.nano * 1e-9
+            tf_quotes[figi] = {'price': price, 'currency': None}
+
+    return tf_quotes
 
 def get_quotes_from_moex(ticker_list):
     def get_moex_quote(ticker):
@@ -17,13 +22,14 @@ def get_quotes_from_moex(ticker_list):
         response = requests.get(base_url)
         data = response.json()
 
-        if len(data) > 1 and 'marketdata' in data[1]:
+        if data[1]['marketdata']:
             marketdata = data[1]['marketdata'][0]
             bid_price = marketdata.get('BID')
             last_price = marketdata.get('LAST')
+            quote = bid_price if bid_price is not None else last_price
+            return {'price': quote, 'currency': None}
 
-            return bid_price if bid_price is not None else last_price
-        return None
+        return {'price': None, 'currency': None}
 
     mx_quotes = {}
     for ticker in ticker_list:
@@ -32,15 +38,18 @@ def get_quotes_from_moex(ticker_list):
     return mx_quotes
 
 
-def get_quotes_from_binance(ticker_list):
+def get_quotes_from_binance(crypto_tickers):
     base_url = "https://api.binance.com/api/v3/ticker/price"
     bc_quotes = {}
 
-    for ticker in ticker_list:
-        response = requests.get(base_url, params={"symbol": ticker+'RUB'})
-        data = response.json()
-        if 'symbol' in data and 'price' in data:
-            bc_quotes[ticker] = float(data['price'])
+    for ticker in crypto_tickers:
+        if ticker == 'USDT':
+            bc_quotes[ticker] = {'price': 1, 'currency': 'USDT'}
+        else:
+            response = requests.get(base_url, params={"symbol": ticker+'USDT'})
+            data = response.json()
+            if 'symbol' in data and 'price' in data:
+                bc_quotes[ticker] = {'price': float(data['price']), 'currency': 'USDT'}
 
     return bc_quotes
 
