@@ -56,10 +56,14 @@ def get_quotes_from_binance(crypto_tickers):
 
 def get_quotes_from_yfinance(ticker_list):
     tkrs = yf.download(ticker_list, period="1m")
+    yf_quotes = {}
+
     if len(ticker_list) == 1:
-        yf_quotes = {ticker_list[0]: tkrs['Adj Close'].iloc[-1]}
-        return yf_quotes
+        tickers_yf = {ticker_list[0]: tkrs['Adj Close'].iloc[-1]}
     else:
-        current_prices_series = tkrs['Adj Close'].iloc[-1]
-        yf_quotes = current_prices_series.to_dict()
-        return yf_quotes
+        tickers_series = tkrs['Adj Close'].iloc[-1]
+        tickers_yf = tickers_series.to_dict()
+
+    for ticker in tickers_yf:
+        yf_quotes[ticker] = {'price': tickers_yf[ticker], 'currency': None}
+    return yf_quotes

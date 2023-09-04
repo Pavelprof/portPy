@@ -9,7 +9,7 @@ from .serializers import *
 from .utils import fetch_prices_and_currencies
 
 class PositionViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Position.objects.filter((Q(quantity_position__gt=0) | Q(quantity_position__lt=0)))
+    queryset = Position.objects.filter(Q(quantity_position__gt=0) | Q(quantity_position__lt=0))
     serializer_class = PositionSerializer
     permission_classes = (IsOwner,)
 
