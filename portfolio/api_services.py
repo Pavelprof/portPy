@@ -44,12 +44,12 @@ def get_quotes_from_binance(crypto_tickers):
 
     for ticker in crypto_tickers:
         if ticker == 'USDT':
-            bc_quotes[ticker] = {'price': 1, 'currency': 'USDT'}
+            bc_quotes[ticker] = {'price': 1, 'currency': None}
         else:
             response = requests.get(base_url, params={"symbol": ticker+'USDT'})
             data = response.json()
             if 'symbol' in data and 'price' in data:
-                bc_quotes[ticker] = {'price': float(data['price']), 'currency': 'USDT'}
+                bc_quotes[ticker] = {'price': float(data['price']), 'currency': None}
 
     return bc_quotes
 
