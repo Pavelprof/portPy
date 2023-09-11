@@ -6,6 +6,7 @@ class AssetSerializer(serializers.ModelSerializer):
     type_asset_display = serializers.CharField(source='get_type_asset_display', read_only=True)
     price = serializers.SerializerMethodField()
     currency = serializers.SerializerMethodField()
+    currency_base_settlement = serializers.CharField(source='currency_base_settlement.ticker')
 
     class Meta:
         model = Asset
