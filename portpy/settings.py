@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "simple_history",
     "rest_framework",
     "debug_toolbar",
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -56,6 +57,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = "portpy.urls"
@@ -129,6 +131,12 @@ USE_TZ = True
 
 INTERNAL_IPS = [
     "127.0.0.1",
+    "http://localhost"
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:9000"
 ]
 
 STATIC_URL = "static/"
