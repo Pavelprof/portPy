@@ -29,7 +29,7 @@ class PositionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Position
-        fields = ('asset', 'account', 'quantity_position', 'total_value')
+        fields = ('id', 'asset', 'account', 'quantity_position', 'total_value')
 
     def get_total_value(self, obj):
         prices_and_currencies = self.context.get('prices_and_currencies', {})

@@ -8,7 +8,7 @@ def fetch_prices_and_currencies(assets):
         for asset in zero_assets:
             prices_and_currencies[asset.id] = {'price': 0, 'currency': asset.currency_base_settlement}
 
-    unit_assets = [asset for asset in assets if (asset.type_asset == 'CY' and asset.isin is None and asset.figi is None)]
+    unit_assets = [asset for asset in assets if (asset.type_asset == 'CY' and asset.currency_influence == asset.currency_base_settlement)]
     if unit_assets:
         for asset in unit_assets:
             prices_and_currencies[asset.id] = {'price': 1, 'currency': asset.currency_base_settlement}

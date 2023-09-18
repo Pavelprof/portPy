@@ -55,7 +55,7 @@ def get_quotes_from_binance(crypto_tickers):
 
 
 def get_quotes_from_yfinance(ticker_list):
-    tkrs = yf.download(ticker_list, period="1m")
+    tkrs = yf.download(ticker_list, period="1d")
     yf_quotes = {}
 
     if len(ticker_list) == 1:
@@ -65,5 +65,6 @@ def get_quotes_from_yfinance(ticker_list):
         tickers_yf = tickers_series.to_dict()
 
     for ticker in tickers_yf:
-        yf_quotes[ticker] = {'price': tickers_yf[ticker], 'currency': None}
+        if tickers_yf[ticker]:
+            yf_quotes[ticker] = {'price': tickers_yf[ticker], 'currency': None}
     return yf_quotes
