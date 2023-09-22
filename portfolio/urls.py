@@ -3,7 +3,7 @@ from .views import *
 from rest_framework import routers
 
 routerPosition = routers.SimpleRouter()
-routerPosition.register(r'position', PositionViewSet)
+routerPosition.register(r'position', PositionViewSet, basename='position')
 
 routerAsset = routers.SimpleRouter()
 routerAsset.register(r'asset', AssetViewSet)

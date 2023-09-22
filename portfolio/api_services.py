@@ -59,12 +59,15 @@ def get_quotes_from_yfinance(ticker_list):
     yf_quotes = {}
 
     if len(ticker_list) == 1:
-        tickers_yf = {ticker_list[0]: tkrs['Adj Close'].iloc[-1]}
+        last_valid_price = tkrs['Adj Close'].dropna().iloc[-1] if not tkrs['Adj Close'].dropna().empty else None
+        if last_valid_price is not None:
+            yf_quotes[ticker_list[0]] = {'price': last_valid_price, 'currency': None}
     else:
-        tickers_series = tkrs['Adj Close'].iloc[-1]
-        tickers_yf = tickers_series.to_dict()
+        for ticker in ticker_list:
+            ticker_data = tkrs.xs(ticker, level=1, axis=1)
+            last_valid_price = ticker_data['Adj Close'].dropna().iloc[-1] if not ticker_data[
+                'Adj Close'].dropna().empty else None
+            if last_valid_price is not None:
+                yf_quotes[ticker] = {'price': last_valid_price, 'currency': None}
 
-    for ticker in tickers_yf:
-        if tickers_yf[ticker]:
-            yf_quotes[ticker] = {'price': tickers_yf[ticker], 'currency': None}
     return yf_quotes

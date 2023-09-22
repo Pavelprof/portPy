@@ -1,5 +1,6 @@
 from django.http import HttpResponseNotFound
 from rest_framework import generics, viewsets
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.db.models import Q
 from .permissions import isAdminOrReadOnly, IsOwner
@@ -7,9 +8,15 @@ from .serializers import *
 from .utils import fetch_prices_and_currencies
 
 class PositionViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Position.objects.filter(Q(quantity_position__gt=0) | Q(quantity_position__lt=0))
     serializer_class = PositionSerializer
-    permission_classes = (IsOwner,)
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        user = self.request.user
+        return Position.objects.filter(
+            Q(quantity_position__gt=0) | Q(quantity_position__lt=0),
+            account__portfolio__user=user
+        )
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
