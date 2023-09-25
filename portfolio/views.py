@@ -1,3 +1,5 @@
+import django_filters
+from django_filters import rest_framework as filters
 from django.http import HttpResponseNotFound
 from rest_framework import generics, viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -6,6 +8,9 @@ from django.db.models import Q
 from .permissions import isAdminOrReadOnly, IsOwner
 from .serializers import *
 from .utils import fetch_prices_and_currencies
+
+class ListFilter(django_filters.BaseInFilter, django_filters.CharFilter):
+    pass
 
 class PositionViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = PositionSerializer
@@ -73,10 +78,22 @@ class AssetViewSet(viewsets.ModelViewSet):
     serializer_class = AssetSerializer
     permission_classes = (isAdminOrReadOnly,)
 
+class TransactionFilter(filters.FilterSet):
+    account__in = ListFilter(field_name='account', lookup_expr='in')
+    asset_transaction = django_filters.CharFilter(field_name='asset_transaction')
+    type_transaction__in = ListFilter(field_name='type_transaction', lookup_expr='in')
+    time_transaction = django_filters.DateTimeFromToRangeFilter(field_name='time_transaction')
+
+    class Meta:
+        model = Transaction
+        fields = []
+
 class TransactionViewSet(viewsets.ModelViewSet):
     queryset = Transaction.objects.all()
     serializer_class = TransactionSerializer
     # permission_classes = (IsOwner,)
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_class = TransactionFilter
 
 def pageNotFound(request, exception):
     return HttpResponseNotFound("<h1>Page not found</h1>")

@@ -57,5 +57,5 @@ class PositionSerializer(serializers.ModelSerializer):
 class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
-        fields = ('account', 'deal', 'position', 'asset_transaction', 'quantity_transaction',
+        fields = ('account', 'position', 'asset_transaction', 'quantity_transaction',
                   'type_transaction', 'time_transaction', 'created', 'updated')
