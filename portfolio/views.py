@@ -73,11 +73,6 @@ class AssetViewSet(viewsets.ModelViewSet):
     serializer_class = AssetSerializer
     permission_classes = (isAdminOrReadOnly,)
 
-class DealViewSet(viewsets.ModelViewSet):
-    queryset = Deal.objects.all()
-    serializer_class = DealSerializer
-    # permission_classes = (IsOwner,)
-
 class TransactionViewSet(viewsets.ModelViewSet):
     queryset = Transaction.objects.all()
     serializer_class = TransactionSerializer

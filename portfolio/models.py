@@ -22,6 +22,13 @@ class Asset(models.Model):
         (CURRENCY, "Currency"),
         (ETF, "Etf"),
         (OTHER, "Other"),]
+
+    class Exchanges(models.IntegerChoices):
+        MOEX = 1
+        SPB = 2
+        Binance = 3
+        NYSE = 4
+
     ticker = models.CharField(max_length=20, unique=True)
     isin = models.CharField(max_length=12, unique=True, null=True, blank=True)
     figi = models.CharField(max_length=12, unique=True, null=True, blank=True)
@@ -33,6 +40,7 @@ class Asset(models.Model):
     country_asset = CountryField(null=True, blank=True, default='US')
     type_asset = models.CharField(max_length=2, choices=TYPE_ASSET_CHOICES, default=OTHER)
     type_base_asset = models.CharField(max_length=2, choices=TYPE_ASSET_CHOICES, default=OTHER)
+    exchange = models.IntegerField(choices=Exchanges.choices, default=1)
     class_code = models.CharField(max_length=20, null=True, blank=True)
     note = models.CharField(max_length=5000, null=True, blank=True)
     is_tradable = models.BooleanField(default=True)
@@ -42,51 +50,23 @@ class Asset(models.Model):
     def __str__(self):
         return self.ticker
 
-class Deal(models.Model):
-    class Exchanges(models.IntegerChoices):
-        MOEX = 1
-        SPB = 2
-        Binance = 3
-        NYSE = 4
-    account = models.ForeignKey('Account', on_delete=models.PROTECT)
-    out_asset = models.ForeignKey('Asset', related_name='out_asset', on_delete=models.PROTECT)
-    in_asset = models.ForeignKey('Asset', related_name='in_asset', on_delete=models.PROTECT)
-    out_quantity = models.FloatField()
-    in_quantity = models.FloatField()
-    lot_exchange_rate = models.FloatField(null=True, blank=True)
-    exchange = models.IntegerField(choices=Exchanges.choices, default=1)
-    note = models.TextField(max_length=10000, null=True, blank=True)
-    time_deal = models.DateTimeField(default=timezone.now)
-    created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
-    history = HistoricalRecords(cascade_delete_history=True)
-
-    def clean(self):
-        super().clean()
-        if type(self.out_quantity) in (int, float) and self.out_quantity > 0:
-            raise ValidationError({'out_quantity' : ['The out_quantity must be negative.',]})
-        if type(self.in_quantity) in (int, float) and self.in_quantity < 0:
-            raise ValidationError({'in_quantity' : ['The in_quantity must be positive.',]})
-
-    def __str__(self):
-        return str(self.pk)
-
-    class Meta:
-        ordering = ['time_deal']
 
 class Transaction(models.Model):
     class Types_transaction(models.IntegerChoices):
-        FUND = 1
-        PROFIT = 2
-        FEE = 3
-        TAX = 4
-        WITHDRAWAL = 5
+        BUY = 1
+        SELL = 2
+        FUND = 3
+        PROFIT = 4
+        FEE = 5
+        TAX = 6
+        WITHDRAWAL = 7
     account = models.ForeignKey('Account', on_delete=models.PROTECT)
-    deal = models.ForeignKey('Deal', on_delete=models.SET_NULL, null=True, blank=True)
+    related_transaction = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
     position = models.ForeignKey('Position', on_delete=models.SET_NULL, null=True, blank=True)
     asset_transaction = models.ForeignKey('Asset', on_delete=models.PROTECT)
     quantity_transaction = models.FloatField()
-    type_transaction = models.IntegerField(choices=Types_transaction.choices, default=2)
+    type_transaction = models.IntegerField(choices=Types_transaction.choices, default=1)
+    note = models.TextField(max_length=10000, null=True, blank=True)
     time_transaction = models.DateTimeField(default=timezone.now)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -94,14 +74,14 @@ class Transaction(models.Model):
 
     def clean(self):
         super().clean()
-        if self.type_transaction in [self.Types_transaction.FUND,
+        if self.type_transaction in [self.Types_transaction.FUND, self.Types_transaction.BUY,
                                      self.Types_transaction.PROFIT] and type(self.quantity_transaction) in (int, float) and self.quantity_transaction < 0:
             raise ValidationError(
-                {'quantity_transaction' : ["For 'FUND' and 'PROFIT' transactions, quantity_transaction should be positive.",]})
-        elif self.type_transaction in [self.Types_transaction.FEE, self.Types_transaction.TAX,
+                {'quantity_transaction' : ["For 'FUND', 'BUY' and 'PROFIT' transactions, quantity_transaction should be positive.",]})
+        elif self.type_transaction in [self.Types_transaction.SELL, self.Types_transaction.FEE, self.Types_transaction.TAX,
                                        self.Types_transaction.WITHDRAWAL] and type(self.quantity_transaction) in (int, float) and self.quantity_transaction > 0:
             raise ValidationError(
-                {'quantity_transaction' : ["For 'FEE', 'TAX', and 'WITHDRAWAL' transactions, quantity_transaction should be negative.",]})
+                {'quantity_transaction' : ["For 'SELL' 'FEE', 'TAX', and 'WITHDRAWAL' transactions, quantity_transaction should be negative.",]})
 
     def __str__(self):
         return str(self.pk)

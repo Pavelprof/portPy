@@ -19,11 +19,6 @@ class AssetAdmin(ImportExportActionModelAdmin):
     search_fields = ('ticker', 'isin', 'full_name_asset', 'name_asset', 'figi')
     list_editable = ('is_tradable',)
 
-class DealAdmin(ImportExportActionModelAdmin):
-    list_display = ('time_deal', 'in_asset', 'id', 'out_asset')
-    list_display_links = ('time_deal', 'in_asset')
-    search_fields = ('in_asset',)
-
 class TransactionAdmin(ImportExportActionModelAdmin):
     list_display = ('id', 'type_transaction', 'quantity_transaction', 'asset_transaction', 'account')
     list_display_links = ('id', 'type_transaction')
@@ -36,7 +31,6 @@ class AccountAdmin(admin.ModelAdmin):
     list_display_links = ('pk', 'name_account',)
 
 admin.site.register(Transaction, TransactionAdmin)
-admin.site.register(Deal, DealAdmin)
 admin.site.register(Asset, AssetAdmin)
 admin.site.register(Portfolio, PortfolioAdmin)
 admin.site.register(Account, AccountAdmin)

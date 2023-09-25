@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Deal, Position, Asset, Transaction
+from .models import Position, Asset, Transaction
 from .api_services import *
 
 class AssetSerializer(serializers.ModelSerializer):
@@ -59,10 +59,3 @@ class TransactionSerializer(serializers.ModelSerializer):
         model = Transaction
         fields = ('account', 'deal', 'position', 'asset_transaction', 'quantity_transaction',
                   'type_transaction', 'time_transaction', 'created', 'updated')
-
-
-class DealSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Deal
-        fields = ('account', 'out_asset', 'out_quantity', 'in_asset', 'in_quantity',
-                  'exchange', 'note', 'time_deal', 'created', 'updated')
