@@ -9,8 +9,22 @@ from .permissions import isAdminOrReadOnly, IsOwner
 from .serializers import *
 from .utils import fetch_prices_and_currencies
 
-class ListFilter(django_filters.BaseInFilter, django_filters.CharFilter):
-    pass
+class TransactionFilter(filters.FilterSet):
+    account = django_filters.AllValuesMultipleFilter(field_name='account')
+    asset_transaction = django_filters.CharFilter(field_name='asset_transaction')
+    type_transaction = django_filters.AllValuesMultipleFilter(field_name='type_transaction')
+    time_transaction = django_filters.DateFromToRangeFilter(field_name='time_transaction')
+
+    class Meta:
+        model = Transaction
+        fields = ['account', 'asset_transaction', 'type_transaction', 'time_transaction']
+
+class TransactionViewSet(viewsets.ModelViewSet):
+    queryset = Transaction.objects.all()
+    serializer_class = TransactionSerializer
+    # permission_classes = (IsOwner,)
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_class = TransactionFilter
 
 class PositionViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = PositionSerializer
@@ -78,22 +92,7 @@ class AssetViewSet(viewsets.ModelViewSet):
     serializer_class = AssetSerializer
     permission_classes = (isAdminOrReadOnly,)
 
-class TransactionFilter(filters.FilterSet):
-    account__in = ListFilter(field_name='account', lookup_expr='in')
-    asset_transaction = django_filters.CharFilter(field_name='asset_transaction')
-    type_transaction__in = ListFilter(field_name='type_transaction', lookup_expr='in')
-    time_transaction = django_filters.DateTimeFromToRangeFilter(field_name='time_transaction')
 
-    class Meta:
-        model = Transaction
-        fields = []
-
-class TransactionViewSet(viewsets.ModelViewSet):
-    queryset = Transaction.objects.all()
-    serializer_class = TransactionSerializer
-    # permission_classes = (IsOwner,)
-    filter_backends = (filters.DjangoFilterBackend,)
-    filterset_class = TransactionFilter
 
 def pageNotFound(request, exception):
     return HttpResponseNotFound("<h1>Page not found</h1>")
