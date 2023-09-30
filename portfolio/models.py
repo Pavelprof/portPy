@@ -24,12 +24,13 @@ class Asset(models.Model):
         (OTHER, "Other"),]
 
     class Exchanges(models.IntegerChoices):
+        OUT = 0 # It's for not pared currencies (USD, RUB, EUR...). Because they can have the same ticker as any asset at any axchange
         MOEX = 1
         SPB = 2
         Binance = 3
         NYSE = 4
 
-    ticker = models.CharField(max_length=20, unique=True)
+    ticker = models.CharField(max_length=20) # unique within one exchange ...clean()
     isin = models.CharField(max_length=12, unique=True, null=True, blank=True)
     figi = models.CharField(max_length=12, unique=True, null=True, blank=True)
     name_asset = models.CharField(max_length=100, null=True, blank=True)
@@ -46,6 +47,22 @@ class Asset(models.Model):
     is_tradable = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+
+    def clean(self):
+        super().clean()
+        existing_assets = self.__class__.objects.filter(ticker=self.ticker, exchange=self.exchange)
+        if self.pk:
+            existing_assets = existing_assets.exclude(pk=self.pk)
+        if existing_assets.exists():
+            raise ValidationError(
+                {
+                    "ticker": "The ticker must be unique within one exchange"
+                }
+            )
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.ticker
@@ -82,6 +99,10 @@ class Transaction(models.Model):
                                        self.Types_transaction.WITHDRAWAL] and type(self.quantity_transaction) in (int, float) and self.quantity_transaction > 0:
             raise ValidationError(
                 {'quantity_transaction' : ["For 'SELL' 'FEE', 'TAX', and 'WITHDRAWAL' transactions, quantity_transaction should be negative.",]})
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return str(self.pk)

@@ -22,7 +22,7 @@ class AssetAdmin(ImportExportActionModelAdmin):
 class TransactionAdmin(ImportExportActionModelAdmin):
     list_display = ('id', 'type_transaction', 'quantity_transaction', 'asset_transaction', 'account')
     list_display_links = ('id', 'type_transaction')
-    search_fields = ('type_transaction', 'asset_transaction')
+    search_fields = ('type_transaction', 'asset_transaction__ticker__icontains')
 
 class PortfolioAdmin(admin.ModelAdmin):
     list_display = ('pk',)
