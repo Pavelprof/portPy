@@ -26,6 +26,11 @@ class TransactionViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = TransactionFilter
 
+class AssetViewSet(viewsets.ModelViewSet):
+    queryset = Asset.objects.all()
+    serializer_class = AssetSerializer
+    permission_classes = (isAdminOrReadOnly,)
+
 class PositionViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = PositionSerializer
     permission_classes = (IsAuthenticated,)
@@ -39,14 +44,14 @@ class PositionViewSet(viewsets.ReadOnlyModelViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        settlement_currency = Asset.objects.filter(ticker=request.GET.get('settlement_currency', 'USD')).first()
+        requested_currency = Asset.objects.filter(ticker=request.GET.get('settlement_currency', 'USD')).first()
         assets = {instance.asset}
 
-        if instance.asset.currency_base_settlement != settlement_currency:
+        if instance.asset.currency_base_settlement != requested_currency:
             exchange_rate_asset = Asset.objects.filter(
                 type_asset='CY',
                 currency_influence=instance.asset.currency_base_settlement,
-                currency_base_settlement__ticker=settlement_currency
+                currency_base_settlement__ticker=requested_currency
             ).first()
 
             if exchange_rate_asset:
@@ -56,25 +61,25 @@ class PositionViewSet(viewsets.ReadOnlyModelViewSet):
 
         serializer = self.get_serializer(instance, context={
             'prices_and_currencies': prices_and_currencies,
-            'settlement_currency': settlement_currency
+            'requested_currency': requested_currency
         })
         return Response(serializer.data)
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        settlement_currency = Asset.objects.filter(ticker=request.GET.get('settlement_currency', 'USD')).first()
+        requested_currency = Asset.objects.filter(ticker=request.GET.get('settlement_currency', 'USD')).first()
         assets = set(position.asset for position in queryset)
 
         unique_currency_assets = set(
             position.asset.currency_base_settlement
             for position in queryset
-            if position.asset.currency_base_settlement != settlement_currency
+            if position.asset.currency_base_settlement != requested_currency
         )
         for asset in unique_currency_assets:
             exchange_rate_asset = Asset.objects.filter(
                 type_asset='CY',
                 currency_influence=asset,
-                currency_base_settlement__ticker=settlement_currency
+                currency_base_settlement__ticker=requested_currency
             ).first()
             if exchange_rate_asset:
                 assets.add(exchange_rate_asset)
@@ -83,15 +88,9 @@ class PositionViewSet(viewsets.ReadOnlyModelViewSet):
 
         serializer = self.get_serializer(queryset, many=True, context={
         'prices_and_currencies': prices_and_currencies,
-        'settlement_currency': settlement_currency
+        'requested_currency': requested_currency
     })
         return Response(serializer.data)
-
-class AssetViewSet(viewsets.ModelViewSet):
-    queryset = Asset.objects.all()
-    serializer_class = AssetSerializer
-    permission_classes = (isAdminOrReadOnly,)
-
 
 
 def pageNotFound(request, exception):

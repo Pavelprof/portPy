@@ -54,6 +54,9 @@ def fetch_prices_and_currencies(assets):
         if prices_and_currencies.get(asset.id, {}).get('currency') in [0, None]:
             prices_and_currencies.setdefault(asset.id, {})['currency'] = asset.currency_base_settlement
 
+        if asset.type_asset == 'BD':
+            prices_and_currencies.setdefault(asset.id, {})['price'] *= (float(asset.bond_nominal)/100)
+
         prices_and_currencies.setdefault(asset.id, {})['currency_influence'] = asset.currency_influence
         prices_and_currencies.setdefault(asset.id, {})['type_asset'] = asset.type_asset
 

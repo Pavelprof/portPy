@@ -33,19 +33,19 @@ class PositionSerializer(serializers.ModelSerializer):
 
     def get_total_value(self, obj):
         prices_and_currencies = self.context.get('prices_and_currencies', {})
-        settlement_currency = self.context.get('settlement_currency')
+        requested_currency = self.context.get('requested_currency')
         price_asset = prices_and_currencies.get(obj.asset.id, {}).get('price', 0)
-        currency_asset = prices_and_currencies.get(obj.asset.id, {}).get('currency', None)
+        settlement_currency = prices_and_currencies.get(obj.asset.id, {}).get('currency', None) #99% it's base_settlement_currency
 
-        if currency_asset == settlement_currency:
+        if settlement_currency == requested_currency:
             return price_asset * obj.quantity_position
 
-        for asset, asset_info in prices_and_currencies.items():
+        for asset, asset_info in prices_and_currencies.items(): # Searching for an exchange rate
             currency = asset_info.get('currency')
             currency_influence = asset_info.get('currency_influence')
             type_asset = asset_info.get('type_asset')
 
-            if currency == settlement_currency and currency_influence == obj.asset.currency_base_settlement and type_asset == "CY":
+            if currency == requested_currency and currency_influence == obj.asset.currency_base_settlement and type_asset == "CY":
                 exchange_rate_asset = asset_info.get('price')
                 break
 

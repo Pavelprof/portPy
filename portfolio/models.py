@@ -36,13 +36,14 @@ class Asset(models.Model):
     name_asset = models.CharField(max_length=100, null=True, blank=True)
     full_name_asset = models.CharField(max_length=200)
     icon = models.ImageField(upload_to="icons/", null=True, blank=True)
-    currency_influence = models.ForeignKey('Asset', related_name='+', on_delete=models.PROTECT, null=True, blank=True)
+    currency_influence = models.ForeignKey('Asset', related_name='+', on_delete=models.PROTECT, null=True, blank=True) # For bonds it's also a nominal currency
     currency_base_settlement = models.ForeignKey('Asset', related_name='+', on_delete=models.PROTECT)
     country_asset = CountryField(null=True, blank=True, default='US')
     type_asset = models.CharField(max_length=2, choices=TYPE_ASSET_CHOICES, default=OTHER)
     type_base_asset = models.CharField(max_length=2, choices=TYPE_ASSET_CHOICES, default=OTHER)
     exchange = models.IntegerField(choices=Exchanges.choices, default=1)
     class_code = models.CharField(max_length=20, null=True, blank=True)
+    bond_nominal = models.DecimalField(max_digits=40, decimal_places=15, null=True, blank=True)
     note = models.CharField(max_length=5000, null=True, blank=True)
     is_tradable = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
@@ -59,6 +60,11 @@ class Asset(models.Model):
                     "ticker": "The ticker must be unique within one exchange"
                 }
             )
+
+        if self.type_asset == self.BOND and self.bond_nominal is None:
+            raise ValidationError({
+                'bond_nominal': 'Bond nominal cannot be null for assets of type Bond.'
+            })
 
     def save(self, *args, **kwargs):
         self.full_clean()
