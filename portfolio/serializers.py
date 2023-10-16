@@ -55,7 +55,8 @@ class PositionSerializer(serializers.ModelSerializer):
 
 
 class TransactionSerializer(serializers.ModelSerializer):
+    ticker = serializers.CharField(source='asset_transaction.ticker')
     class Meta:
         model = Transaction
-        fields = ('account', 'position', 'asset_transaction', 'quantity_transaction',
+        fields = ('account', 'position', 'ticker', 'quantity_transaction',
                   'type_transaction', 'time_transaction', 'created', 'updated')
