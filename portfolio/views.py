@@ -4,6 +4,7 @@ from django.http import HttpResponseNotFound
 from rest_framework import generics, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.decorators import action
 from django.db.models import Q
 from .permissions import isAdminOrReadOnly, IsOwner
 from .serializers import *
@@ -13,7 +14,7 @@ class TransactionFilter(filters.FilterSet):
     account = django_filters.AllValuesMultipleFilter(field_name='account')
     asset_transaction = django_filters.CharFilter(field_name='asset_transaction')
     type_transaction = django_filters.AllValuesMultipleFilter(field_name='type_transaction')
-    time_transaction = django_filters.DateFromToRangeFilter(field_name='time_transaction')
+    time_transaction = django_filters.DateTimeFromToRangeFilter(field_name='time_transaction')
 
     class Meta:
         model = Transaction
@@ -25,6 +26,16 @@ class TransactionViewSet(viewsets.ModelViewSet):
     # permission_classes = (IsOwner,)
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = TransactionFilter
+
+    @action(detail=False, methods=['get'])
+    def unique_transaction_types(self, request, *args, **kwargs):
+        # получаем queryset транзакций, принадлежащих текущему пользователю
+        user_transactions = self.queryset.filter(account__portfolio__user=self.request.user)
+
+        # получаем уникальные типы транзакций
+        unique_types = user_transactions.order_by().values_list('type_transaction', flat=True).distinct()
+
+        return Response(unique_types)
 
 class AssetViewSet(viewsets.ModelViewSet):
     queryset = Asset.objects.all()
