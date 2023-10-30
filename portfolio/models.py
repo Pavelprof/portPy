@@ -73,7 +73,6 @@ class Asset(models.Model):
     def __str__(self):
         return self.ticker
 
-
 class Transaction(models.Model):
     class Types_transaction(models.IntegerChoices):
         BUY = 1

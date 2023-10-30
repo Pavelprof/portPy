@@ -1,6 +1,23 @@
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from .models import Position, Asset, Transaction
-from .api_services import *
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
+
+User = get_user_model()
+
+
+class CustomTokenRefreshSerializer(TokenRefreshSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        user_id = RefreshToken(attrs['refresh']).payload['user_id']
+        user = User.objects.get(id=user_id)
+        refresh = RefreshToken.for_user(user)
+
+        data['refresh'] = str(refresh)
+        data['access'] = str(refresh.access_token)
+
+        return data
 
 class AssetSerializer(serializers.ModelSerializer):
     type_asset_display = serializers.CharField(source='get_type_asset_display', read_only=True)

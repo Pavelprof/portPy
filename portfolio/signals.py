@@ -1,6 +1,16 @@
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from portfolio.models import Transaction, Position
+from rest_framework_simplejwt.tokens import RefreshToken, OutstandingToken, BlacklistedToken
+from rest_framework_simplejwt.models import TokenUser
+
+@receiver(post_save, sender=OutstandingToken)
+def revoke_old_tokens(sender, instance, created, **kwargs):
+    if created:
+        user = instance.user
+        tokens = OutstandingToken.objects.filter(user=user).exclude(id=instance.id)
+        for token in tokens:
+            BlacklistedToken.objects.get_or_create(token=token)
 
 @receiver([post_save, post_delete], sender=Transaction)
 def update_positions_from_transaction(sender, instance, **kwargs):

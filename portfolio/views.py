@@ -5,10 +5,14 @@ from rest_framework import generics, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework_simplejwt.views import TokenRefreshView
 from django.db.models import Q
 from .permissions import isAdminOrReadOnly, IsOwner
 from .serializers import *
 from .utils import fetch_prices_and_currencies
+
+class CustomTokenRefreshView(TokenRefreshView):
+    serializer_class = CustomTokenRefreshSerializer
 
 class TransactionFilter(filters.FilterSet):
     account = django_filters.AllValuesMultipleFilter(field_name='account')
