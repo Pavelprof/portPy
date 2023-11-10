@@ -6,10 +6,10 @@ routerPosition = routers.SimpleRouter()
 routerPosition.register(r'position', PositionViewSet, basename='position')
 
 routerAsset = routers.SimpleRouter()
-routerAsset.register(r'asset', AssetViewSet)
+routerAsset.register(r'asset', AssetViewSet, basename='asset')
 
 routerTransaction = routers.SimpleRouter()
-routerTransaction.register(r'transaction', TransactionViewSet)
+routerTransaction.register(r'transaction', TransactionViewSet, basename='transaction')
 
 urlpatterns = [
     path('api/v1/', include(routerPosition.urls)),

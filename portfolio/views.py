@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework_simplejwt.views import TokenRefreshView
 from django.db.models import Q
-from .permissions import isAdminOrReadOnly, IsOwner
+from .permissions import isAdminOrReadOnly
 from .serializers import *
 from .utils import fetch_prices_and_currencies
 
@@ -25,11 +25,14 @@ class TransactionFilter(filters.FilterSet):
         fields = ['account', 'asset_transaction', 'type_transaction', 'time_transaction']
 
 class TransactionViewSet(viewsets.ModelViewSet):
-    queryset = Transaction.objects.all()
     serializer_class = TransactionSerializer
-    # permission_classes = (IsOwner,)
+    permission_classes = (IsAuthenticated,)
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = TransactionFilter
+
+    def get_queryset(self):
+        user = self.request.user
+        return Transaction.objects.filter(account__portfolio__user=user)
 
     @action(detail=False, methods=['get'])
     def unique_transaction_types(self, request, *args, **kwargs):

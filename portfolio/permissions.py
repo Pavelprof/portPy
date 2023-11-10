@@ -6,7 +6,3 @@ class isAdminOrReadOnly(permissions.BasePermission):
             return True
 
         return bool(request.user and request.user.is_authenticated)
-
-class IsOwner(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return obj.account.portfolio.user == request.user
