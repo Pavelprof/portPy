@@ -36,7 +36,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def unique_transaction_types(self, request, *args, **kwargs):
-        user_transactions = self.queryset.filter(account__portfolio__user=request.user)
+        user_transactions = self.get_queryset().filter(account__portfolio__user=request.user)
         unique_types = user_transactions.order_by().values_list('type_transaction', flat=True).distinct()
         type_display_mapping = dict(Transaction.Types_transaction.choices)
         unique_type_dict = {name: id for id, name in type_display_mapping.items() if id in unique_types}
