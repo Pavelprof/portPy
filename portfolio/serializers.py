@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from .models import Position, Asset, Transaction
+from .models import Position, Asset, Transaction, Account
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -24,6 +24,7 @@ class AssetSerializer(serializers.ModelSerializer):
     price = serializers.SerializerMethodField()
     currency = serializers.SerializerMethodField()
     currency_base_settlement = serializers.CharField(source='currency_base_settlement.ticker')
+    currency_influence = serializers.CharField(source='currency_influence.ticker', allow_null=True)
 
     class Meta:
         model = Asset
@@ -68,12 +69,19 @@ class PositionSerializer(serializers.ModelSerializer):
 
         return price_asset * obj.quantity_position * exchange_rate_asset
 
-
-
-
 class TransactionSerializer(serializers.ModelSerializer):
     ticker = serializers.CharField(source='asset_transaction.ticker')
     class Meta:
         model = Transaction
         fields = ('account', 'position', 'ticker', 'quantity_transaction',
                   'type_transaction', 'time_transaction', 'created', 'updated')
+
+class AccountSerializer(serializers.ModelSerializer):
+    portfolio = serializers.CharField(source='portfolio.name_portfolio')
+    country_account = serializers.SerializerMethodField()
+    class Meta:
+        model = Account
+        fields = ('portfolio', 'name_account', 'country_account', 'broker', 'created')
+
+    def get_country_account(self, obj):
+        return obj.country_account.name

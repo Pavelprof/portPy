@@ -109,6 +109,13 @@ class PositionViewSet(viewsets.ReadOnlyModelViewSet):
     })
         return Response(serializer.data)
 
+class AccountViewSet(viewsets.ModelViewSet):
+    serializer_class = AccountSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        user = self.request.user
+        return Account.objects.filter(portfolio__user=user)
 
 def pageNotFound(request, exception):
     return HttpResponseNotFound("<h1>Page not found</h1>")

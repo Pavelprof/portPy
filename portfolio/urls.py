@@ -11,8 +11,12 @@ routerAsset.register(r'asset', AssetViewSet, basename='asset')
 routerTransaction = routers.SimpleRouter()
 routerTransaction.register(r'transaction', TransactionViewSet, basename='transaction')
 
+routerAccount = routers.SimpleRouter()
+routerAccount.register(r'account', AccountViewSet, basename='account')
+
 urlpatterns = [
     path('api/v1/', include(routerPosition.urls)),
     path("api/v1/", include(routerAsset.urls)),
     path("api/v1/", include(routerTransaction.urls)),
+    path("api/v1/", include(routerAccount.urls)),
 ]
