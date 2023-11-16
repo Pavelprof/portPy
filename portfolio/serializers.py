@@ -58,6 +58,8 @@ class PositionSerializer(serializers.ModelSerializer):
         if settlement_currency == requested_currency:
             return price_asset * obj.quantity_position
 
+        exchange_rate_asset = None
+
         for asset, asset_info in prices_and_currencies.items(): # Searching for an exchange rate
             currency = asset_info.get('currency')
             currency_influence = asset_info.get('currency_influence')
@@ -66,6 +68,9 @@ class PositionSerializer(serializers.ModelSerializer):
             if currency == requested_currency and currency_influence == obj.asset.currency_base_settlement and type_asset == "CY":
                 exchange_rate_asset = asset_info.get('price')
                 break
+
+        if exchange_rate_asset is None:
+            raise ValueError(f"Exchange rate asset not found for {obj.asset.ticker}.")
 
         return price_asset * obj.quantity_position * exchange_rate_asset
 

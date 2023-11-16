@@ -24,6 +24,19 @@ class TransactionFilter(filters.FilterSet):
         model = Transaction
         fields = ['account', 'asset_transaction', 'type_transaction', 'time_transaction']
 
+class PositionFilter(filters.FilterSet):
+    ticker = django_filters.CharFilter(field_name='asset__ticker')
+    isin = django_filters.CharFilter(field_name='asset__isin')
+    currency_influence = django_filters.CharFilter(field_name='asset__currency_influence')
+    account = django_filters.AllValuesMultipleFilter(field_name='account')
+    asset_transaction = django_filters.CharFilter(field_name='asset_transaction')
+    type_transaction = django_filters.AllValuesMultipleFilter(field_name='type_transaction')
+    time_transaction = django_filters.DateTimeFromToRangeFilter(field_name='time_transaction')
+
+    class Meta:
+        model = Transaction
+        fields = ['account', 'asset_transaction', 'type_transaction', 'time_transaction']
+
 class TransactionViewSet(viewsets.ModelViewSet):
     serializer_class = TransactionSerializer
     permission_classes = (IsAuthenticated,)
