@@ -28,14 +28,12 @@ class PositionFilter(filters.FilterSet):
     ticker = django_filters.CharFilter(field_name='asset__ticker')
     isin = django_filters.CharFilter(field_name='asset__isin')
     currency_influence = django_filters.CharFilter(field_name='asset__currency_influence')
+    asset_type = django_filters.AllValuesMultipleFilter(field_name='asset__type_asset')
     account = django_filters.AllValuesMultipleFilter(field_name='account')
-    asset_transaction = django_filters.CharFilter(field_name='asset_transaction')
-    type_transaction = django_filters.AllValuesMultipleFilter(field_name='type_transaction')
-    time_transaction = django_filters.DateTimeFromToRangeFilter(field_name='time_transaction')
 
     class Meta:
-        model = Transaction
-        fields = ['account', 'asset_transaction', 'type_transaction', 'time_transaction']
+        model = Position
+        fields = ['ticker', 'isin', 'currency_influence', 'asset_type', 'account']
 
 class TransactionViewSet(viewsets.ModelViewSet):
     serializer_class = TransactionSerializer
@@ -64,6 +62,8 @@ class AssetViewSet(viewsets.ModelViewSet):
 class PositionViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = PositionSerializer
     permission_classes = (IsAuthenticated,)
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_class = PositionFilter
 
     def get_queryset(self):
         user = self.request.user
@@ -111,7 +111,7 @@ class PositionViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(serializer.data)
 
     def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
+        queryset = self.filter_queryset(self.get_queryset())
         requested_currency = Asset.objects.filter(ticker=request.GET.get('settlement_currency', 'USD')).first()
         assets = set(position.asset for position in queryset)
 
