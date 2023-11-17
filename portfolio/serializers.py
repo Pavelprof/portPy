@@ -3,6 +3,7 @@ from rest_framework import serializers
 from .models import Position, Asset, Transaction, Account
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
+import math
 
 User = get_user_model()
 
@@ -44,10 +45,14 @@ class AssetSerializer(serializers.ModelSerializer):
 class PositionSerializer(serializers.ModelSerializer):
     asset = AssetSerializer()
     total_value = serializers.SerializerMethodField()
+    total_value_currency = serializers.SerializerMethodField()
 
     class Meta:
         model = Position
-        fields = ('id', 'asset', 'account', 'quantity_position', 'total_value')
+        fields = ('id', 'asset', 'account', 'quantity_position', 'total_value', 'total_value_currency')
+
+    def get_total_value_currency(self, obj):
+        return self.context.get('requested_currency').ticker
 
     def get_total_value(self, obj):
         prices_and_currencies = self.context.get('prices_and_currencies', {})
@@ -56,7 +61,7 @@ class PositionSerializer(serializers.ModelSerializer):
         settlement_currency = prices_and_currencies.get(obj.asset.id, {}).get('currency', None) #99% it's base_settlement_currency
 
         if settlement_currency == requested_currency:
-            return price_asset * obj.quantity_position
+            return math.floor(price_asset * obj.quantity_position * 1000) / 1000
 
         exchange_rate_asset = None
 
@@ -72,7 +77,7 @@ class PositionSerializer(serializers.ModelSerializer):
         if exchange_rate_asset is None:
             raise ValueError(f"Exchange rate asset not found for {obj.asset.ticker}.")
 
-        return price_asset * obj.quantity_position * exchange_rate_asset
+        return math.floor(price_asset * obj.quantity_position * exchange_rate_asset * 1000) / 1000
 
 class TransactionSerializer(serializers.ModelSerializer):
     ticker = serializers.CharField(source='asset_transaction.ticker')
