@@ -28,12 +28,12 @@ class PositionFilter(filters.FilterSet):
     ticker = django_filters.CharFilter(field_name='asset__ticker')
     isin = django_filters.CharFilter(field_name='asset__isin')
     currency_influence = django_filters.CharFilter(field_name='asset__currency_influence')
-    asset_type = django_filters.AllValuesMultipleFilter(field_name='asset__type_asset')
+    type_asset = django_filters.AllValuesMultipleFilter(field_name='asset__type_asset')
     account = django_filters.AllValuesMultipleFilter(field_name='account')
 
     class Meta:
         model = Position
-        fields = ['ticker', 'isin', 'currency_influence', 'asset_type', 'account']
+        fields = ['ticker', 'isin', 'currency_influence', 'type_asset', 'account']
 
 class TransactionViewSet(viewsets.ModelViewSet):
     serializer_class = TransactionSerializer
@@ -74,14 +74,12 @@ class PositionViewSet(viewsets.ReadOnlyModelViewSet):
 
     @action(detail=False, methods=['get'])
     def unique_asset_types(self, request):
-        unique_types_query = self.get_queryset() \
-            .values_list('asset__type_asset', flat=True) \
-            .distinct()
+        unique_types_query = self.get_queryset().values_list('asset__type_asset', flat=True).distinct()
 
         type_display_mapping = dict(Asset.TYPE_ASSET_CHOICES)
 
         unique_asset_types = {
-            type_code: type_display_mapping[type_code]
+            type_display_mapping[type_code]:type_code
             for type_code in unique_types_query if type_code in type_display_mapping
         }
 
