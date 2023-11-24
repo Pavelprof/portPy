@@ -151,6 +151,27 @@ class AssetGroup(models.Model):
     description = models.TextField()
     user = models.ForeignKey('auth.User', on_delete=models.PROTECT)
     selection_logic = JSONField()
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
+
+class Structure(models.Model):
+    name = models.CharField(max_length=100)
+    owner = models.ForeignKey('auth.User', on_delete=models.PROTECT)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+class TargetWeight(models.Model):
+    structure = models.ForeignKey(Structure, on_delete=models.CASCADE)
+    asset_group = models.ForeignKey(AssetGroup, on_delete=models.CASCADE)
+    target_value = models.DecimalField(max_digits=5, decimal_places=2)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.structure.name} - {self.target_value}%"
