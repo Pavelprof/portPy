@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import JSONField
 from simple_history.models import HistoricalRecords
 from django.utils import timezone
 from django_countries.fields import CountryField
@@ -144,3 +145,12 @@ class Position(models.Model):
 
     def __str__(self):
         return str(self.pk)
+
+class AssetGroup(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    user = models.ForeignKey('auth.User', on_delete=models.PROTECT)
+    selection_logic = JSONField()
+
+    def __str__(self):
+        return self.name
