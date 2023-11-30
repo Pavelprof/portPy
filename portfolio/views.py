@@ -72,19 +72,6 @@ class PositionViewSet(viewsets.ReadOnlyModelViewSet):
             account__portfolio__user=user
         )
 
-    @action(detail=False, methods=['get'])
-    def unique_asset_types(self, request):
-        unique_types_query = self.get_queryset().values_list('asset__type_asset', flat=True).distinct()
-
-        type_display_mapping = dict(Asset.TYPE_ASSET_CHOICES)
-
-        unique_asset_types = {
-            type_display_mapping[type_code]:type_code
-            for type_code in unique_types_query if type_code in type_display_mapping
-        }
-
-        return Response(unique_asset_types)
-
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         requested_currency = Asset.objects.filter(ticker=request.GET.get('settlement_currency', 'USD')).first()
@@ -134,6 +121,19 @@ class PositionViewSet(viewsets.ReadOnlyModelViewSet):
         'requested_currency': requested_currency
     })
         return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def unique_asset_types(self, request):
+        unique_types_query = self.get_queryset().values_list('asset__type_asset', flat=True).distinct()
+
+        type_display_mapping = dict(Asset.TYPE_ASSET_CHOICES)
+
+        unique_asset_types = {
+            type_display_mapping[type_code]:type_code
+            for type_code in unique_types_query if type_code in type_display_mapping
+        }
+
+        return Response(unique_asset_types)
 
 class AccountViewSet(viewsets.ModelViewSet):
     serializer_class = AccountSerializer
