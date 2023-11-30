@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     "simple_history",
     "rest_framework",
     'rest_framework_simplejwt.token_blacklist',
+    'django_celery_results',
+    'django_celery_beat',
     "debug_toolbar",
     'corsheaders',
 ]
@@ -148,7 +150,12 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
-REDIS_CACHE_URL = os.environ.get('REDIS_CACHE_URL', 'redis://localhost:6379/0')
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': 'redis://localhost:6379/0',
+    }
+}
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
