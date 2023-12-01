@@ -1,4 +1,19 @@
 from .api_services import *
+from django.core.cache import cache
+import json
+from .models import Asset
+
+def get_price_and_currency(asset_id):
+    price_and_currency_json = cache.get(f'asset_info:{asset_id}')
+    if price_and_currency_json is not None:
+        return {asset_id: json.loads(price_and_currency_json)}
+
+    asset = Asset.objects.get(id=asset_id)
+    price_and_currency_data = fetch_prices_and_currencies([asset])
+
+    cache.set(f'asset_info:{asset_id}', json.dumps(price_and_currency_data[asset_id]), 900)
+
+    return price_and_currency_data
 
 def fetch_prices_and_currencies(assets):
     prices_and_currencies = {}
@@ -6,12 +21,12 @@ def fetch_prices_and_currencies(assets):
     zero_assets = [asset for asset in assets if asset.is_tradable == False]
     if zero_assets:
         for asset in zero_assets:
-            prices_and_currencies[asset.id] = {'price': 0, 'currency': asset.currency_base_settlement}
+            prices_and_currencies[asset.id] = {'price': 0, 'currency_id': asset.currency_base_settlement.id}
 
     unit_assets = [asset for asset in assets if (asset.type_asset == 'CY' and asset.currency_influence == asset.currency_base_settlement)]
     if unit_assets:
         for asset in unit_assets:
-            prices_and_currencies[asset.id] = {'price': 1, 'currency': asset.currency_base_settlement}
+            prices_and_currencies[asset.id] = {'price': 1, 'currency_id': asset.currency_base_settlement.id}
 
 
     crypto_assets = [asset for asset in assets if asset.type_asset == 'CO' and asset.id not in prices_and_currencies]
@@ -52,13 +67,10 @@ def fetch_prices_and_currencies(assets):
 
     for asset in assets:
         if prices_and_currencies.get(asset.id, {}).get('currency') in [0, None]:
-            prices_and_currencies.setdefault(asset.id, {})['currency'] = asset.currency_base_settlement
+            prices_and_currencies.setdefault(asset.id, {})['currency_id'] = asset.currency_base_settlement.id
 
         if asset.type_asset == 'BD':
             prices_and_currencies.setdefault(asset.id, {})['price'] *= (float(asset.bond_nominal)/100)
-
-        prices_and_currencies.setdefault(asset.id, {})['currency_influence'] = asset.currency_influence
-        prices_and_currencies.setdefault(asset.id, {})['type_asset'] = asset.type_asset
 
 
     return prices_and_currencies

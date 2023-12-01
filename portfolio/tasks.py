@@ -17,10 +17,8 @@ def update_asset_prices():
     for asset_id, asset_info in prices_info.items():
         asset_info_for_json = {
             'price': asset_info['price'],
-            'currency_id': asset_info['currency'].id if asset_info['currency'] else None,
-            'currency_influence_id': asset_info['currency_influence'].id if asset_info['currency_influence'] else None,
-            'type_asset': asset_info['type_asset']
+            'currency_id': asset_info['currency_id']
         }
 
         asset_info_json = json.dumps(asset_info_for_json)
-        cache.set(f'asset_info:{asset_id}', asset_info_json)
+        cache.set(f'asset_info:{asset_id}', asset_info_json, 7200)
