@@ -12,7 +12,7 @@ def get_quotes_from_tinkoff(figi_list):
         for price_object in r.last_prices:
             figi = price_object.figi
             price = price_object.price.units + price_object.price.nano * 1e-9
-            tf_quotes[figi] = {'price': price, 'currency_id': None}
+            tf_quotes[figi] = {'price': price, 'currency': None}
 
     return tf_quotes
 
@@ -27,9 +27,9 @@ def get_quotes_from_moex(ticker_list):
             bid_price = marketdata.get('BID')
             last_price = marketdata.get('LAST')
             quote = bid_price if bid_price is not None else last_price
-            return {'price': quote, 'currency_id': None}
+            return {'price': quote, 'currency': None}
 
-        return {'price': None, 'currency_id': None}
+        return {'price': None, 'currency': None}
 
     mx_quotes = {}
     for ticker in ticker_list:
@@ -44,12 +44,12 @@ def get_quotes_from_binance(crypto_tickers):
 
     for ticker in crypto_tickers:
         if ticker == 'USDT':
-            bc_quotes[ticker] = {'price': 1, 'currency_id': None}
+            bc_quotes[ticker] = {'price': 1, 'currency': None}
         else:
             response = requests.get(base_url, params={"symbol": ticker+'USDT'})
             data = response.json()
             if 'symbol' in data and 'price' in data:
-                bc_quotes[ticker] = {'price': float(data['price']), 'currency_id': None}
+                bc_quotes[ticker] = {'price': float(data['price']), 'currency': None}
 
     return bc_quotes
 
@@ -61,13 +61,13 @@ def get_quotes_from_yfinance(ticker_list):
     if len(ticker_list) == 1:
         last_valid_price = tkrs['Adj Close'].dropna().iloc[-1] if not tkrs['Adj Close'].dropna().empty else None
         if last_valid_price is not None:
-            yf_quotes[ticker_list[0]] = {'price': last_valid_price, 'currency_id': None}
+            yf_quotes[ticker_list[0]] = {'price': last_valid_price, 'currency': None}
     else:
         for ticker in ticker_list:
             ticker_data = tkrs.xs(ticker, level=1, axis=1)
             last_valid_price = ticker_data['Adj Close'].dropna().iloc[-1] if not ticker_data[
                 'Adj Close'].dropna().empty else None
             if last_valid_price is not None:
-                yf_quotes[ticker] = {'price': last_valid_price, 'currency_id': None}
+                yf_quotes[ticker] = {'price': last_valid_price, 'currency': None}
 
     return yf_quotes

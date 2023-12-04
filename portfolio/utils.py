@@ -21,12 +21,12 @@ def fetch_prices_and_currencies(assets):
     zero_assets = [asset for asset in assets if asset.is_tradable == False]
     if zero_assets:
         for asset in zero_assets:
-            prices_and_currencies[asset.id] = {'price': 0, 'currency_id': asset.currency_base_settlement.id}
+            prices_and_currencies[asset.id] = {'price': 0, 'currency': {'id': asset.currency_base_settlement.id, 'ticker':asset.currency_base_settlement.ticker}}
 
     unit_assets = [asset for asset in assets if (asset.type_asset == 'CY' and asset.currency_influence == asset.currency_base_settlement)]
     if unit_assets:
         for asset in unit_assets:
-            prices_and_currencies[asset.id] = {'price': 1, 'currency_id': asset.currency_base_settlement.id}
+            prices_and_currencies[asset.id] = {'price': 1, 'currency': {'id': asset.currency_base_settlement.id, 'ticker':asset.currency_base_settlement.ticker}}
 
 
     crypto_assets = [asset for asset in assets if asset.type_asset == 'CO' and asset.id not in prices_and_currencies]
@@ -67,7 +67,7 @@ def fetch_prices_and_currencies(assets):
 
     for asset in assets:
         if prices_and_currencies.get(asset.id, {}).get('currency') in [0, None]:
-            prices_and_currencies.setdefault(asset.id, {})['currency_id'] = asset.currency_base_settlement.id
+            prices_and_currencies.setdefault(asset.id, {})['currency'] = {'id': asset.currency_base_settlement.id, 'ticker':asset.currency_base_settlement.ticker}
 
         if asset.type_asset == 'BD':
             prices_and_currencies.setdefault(asset.id, {})['price'] *= (float(asset.bond_nominal)/100)

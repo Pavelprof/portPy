@@ -15,10 +15,4 @@ def update_asset_prices():
     prices_info = fetch_prices_and_currencies(assets)
 
     for asset_id, asset_info in prices_info.items():
-        asset_info_for_json = {
-            'price': asset_info['price'],
-            'currency_id': asset_info['currency_id']
-        }
-
-        asset_info_json = json.dumps(asset_info_for_json)
-        cache.set(f'asset_info:{asset_id}', asset_info_json, 7200)
+        cache.set(f'asset_info:{asset_id}', json.dumps(asset_info), 7200)

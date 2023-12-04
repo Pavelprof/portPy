@@ -16,7 +16,7 @@ routerAccount.register(r'account', AccountViewSet, basename='account')
 
 urlpatterns = [
     path('api/v1/', include(routerPosition.urls)),
-    path("api/v1/", include(routerAsset.urls)),
+    # path("api/v1/", include(routerAsset.urls)),  # It's too big, should be restricted!
     path("api/v1/", include(routerTransaction.urls)),
     path("api/v1/", include(routerAccount.urls)),
 ]
