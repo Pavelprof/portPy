@@ -4,6 +4,8 @@ from .models import Position, Asset, Transaction, Account
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from .utils import get_price_and_currency
+
 User = get_user_model()
 
 class CustomTokenRefreshSerializer(TokenRefreshSerializer):
@@ -42,10 +44,24 @@ class PositionSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['price_currency'] = instance.price_currency
-        representation['price'] = instance.price
-        representation['total_value_currency'] = instance.total_value_currency.ticker if instance.total_value_currency else None
-        representation['total_value'] = instance.total_value
+
+        price_and_currency = get_price_and_currency(instance.asset_id)
+
+        representation['price_currency'] = price_and_currency[instance.asset_id]['currency']['ticker']
+        representation['price'] = price_and_currency[instance.asset_id]['price']
+        representation['total_value_currency'] = requested_currency
+
+        if price_and_currency[instance.asset_id]['currency']['ticker'] == requested_currency:
+            representation['total_value'] = instance.quantity_position * instance.price
+        else:
+            exchange_rate_asset = Asset.objects.filter(
+                type_asset='CY',
+                currency_influence=instance.asset.currency_base_settlement,
+                currency_base_settlement__ticker=requested_currency
+            ).first()
+            exchange_rate = get_price_and_currency(exchange_rate_asset.id)[exchange_rate_asset.id]['price']
+            representation['total_value'] = instance.quantity_position * instance.price * exchange_rate
+
         return representation
 
 class TransactionSerializer(serializers.ModelSerializer):
