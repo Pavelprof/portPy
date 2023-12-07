@@ -2,6 +2,39 @@ from .api_services import *
 from django.core.cache import cache
 import json
 from .models import Asset
+from django.db.models import Q
+
+def apply_assetgroup_filters(filters_json):
+    q_objects = Q()
+
+    for criterion in filters_json:
+        field = f'asset__{criterion.get("field")}'
+        operation = criterion.get('operation')
+        value = criterion.get('value')
+
+        if operation == 'equals':
+            q_objects &= Q(**{field: value})
+        elif operation == 'not_equals':
+            q_objects &= ~Q(**{field: value})
+        elif operation == 'in':
+            q_objects &= Q(**{f'{field}__in': value})
+        elif operation == 'not_in':
+            q_objects &= ~Q(**{f'{field}__in': value})
+        elif operation == 'less_than':
+            q_objects &= Q(**{f'{field}__lt': value})
+        elif operation == 'less_than_or_equal_to':
+            q_objects &= Q(**{f'{field}__lte': value})
+        elif operation == 'greater_than':
+            q_objects &= Q(**{f'{field}__gt': value})
+        elif operation == 'greater_than_or_equal_to':
+            q_objects &= Q(**{f'{field}__gte': value})
+        elif operation == 'contains':
+            q_objects &= Q(**{f'{field}__contains': value})
+        elif operation == 'not_contains':
+            q_objects &= ~Q(**{f'{field}__contains': value})
+
+    return q_objects
+
 
 def get_price_and_currency(asset_id):
     price_and_currency_json = cache.get(f'asset_info:{asset_id}')

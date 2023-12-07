@@ -149,8 +149,8 @@ class Position(models.Model):
 class AssetGroup(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
-    user = models.ForeignKey('auth.User', on_delete=models.PROTECT)
-    selection_logic = JSONField()
+    creator = models.ForeignKey('auth.User', on_delete=models.PROTECT)
+    filters = JSONField()
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 

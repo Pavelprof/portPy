@@ -30,6 +30,25 @@ class AccountAdmin(admin.ModelAdmin):
     list_display = ('pk', 'name_account', 'broker', 'country_account')
     list_display_links = ('pk', 'name_account',)
 
+class AssetGroupAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'name', 'creator', 'created')
+    list_display_links = ('pk', 'name')
+    search_fields = ('name', 'description')
+
+class StructureAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'name', 'owner', 'created')
+    list_display_links = ('pk', 'name')
+    search_fields = ('name',)
+
+class TargetWeightAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'target_value', 'structure', 'asset_group', 'created', 'updated')
+    list_display_links = ('pk', 'target_value',)
+    search_fields = ('structure', 'asset_group',)
+
+
+admin.site.register(TargetWeight, TargetWeightAdmin)
+admin.site.register(Structure, StructureAdmin)
+admin.site.register(AssetGroup, AssetGroupAdmin)
 admin.site.register(Transaction, TransactionAdmin)
 admin.site.register(Asset, AssetAdmin)
 admin.site.register(Portfolio, PortfolioAdmin)
