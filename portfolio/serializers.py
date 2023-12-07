@@ -46,13 +46,15 @@ class PositionSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
 
         price_and_currency = get_price_and_currency(instance.asset_id)
+        requested_currency = self.context.get('requested_currency')
+        price = price_and_currency[instance.asset_id]['price']
 
+        representation['price'] = price
         representation['price_currency'] = price_and_currency[instance.asset_id]['currency']['ticker']
-        representation['price'] = price_and_currency[instance.asset_id]['price']
-        representation['total_value_currency'] = requested_currency
+        representation['total_value_currency'] = requested_currency.ticker
 
         if price_and_currency[instance.asset_id]['currency']['ticker'] == requested_currency:
-            representation['total_value'] = instance.quantity_position * instance.price
+            representation['total_value'] = instance.quantity_position * price
         else:
             exchange_rate_asset = Asset.objects.filter(
                 type_asset='CY',
@@ -60,7 +62,7 @@ class PositionSerializer(serializers.ModelSerializer):
                 currency_base_settlement__ticker=requested_currency
             ).first()
             exchange_rate = get_price_and_currency(exchange_rate_asset.id)[exchange_rate_asset.id]['price']
-            representation['total_value'] = instance.quantity_position * instance.price * exchange_rate
+            representation['total_value'] = instance.quantity_position * price * exchange_rate
 
         return representation
 

@@ -65,31 +65,35 @@ class PositionViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = PositionFilter
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['requested_currency'] = Asset.objects.filter(ticker=self.request.GET.get('settlement_currency', 'USD')).first()
+        return context
+
     def get_queryset(self):
         user = self.request.user
-        requested_currency = Asset.objects.filter(ticker=self.request.GET.get('settlement_currency', 'USD')).first()
         queryset = Position.objects.filter(
             Q(quantity_position__gt=0) | Q(quantity_position__lt=0),
             account__portfolio__user=user
         )
 
-        for position in queryset:
-            price_and_currency = get_price_and_currency(position.asset_id)
-
-            position.price_currency = price_and_currency[position.asset_id]['currency']['ticker']
-            position.price = price_and_currency[position.asset_id]['price']
-            position.total_value_currency = requested_currency
-
-            if price_and_currency[position.asset_id]['currency']['ticker'] == requested_currency:
-                position.total_value = position.quantity_position * position.price
-            else:
-                exchange_rate_asset = Asset.objects.filter(
-                    type_asset='CY',
-                    currency_influence=position.asset.currency_base_settlement,
-                    currency_base_settlement__ticker=requested_currency
-                ).first()
-                exchange_rate = get_price_and_currency(exchange_rate_asset.id)[exchange_rate_asset.id]['price']
-                position.total_value = position.quantity_position * position.price * exchange_rate
+        # for position in queryset:
+        #     price_and_currency = get_price_and_currency(position.asset_id)
+        #
+        #     position.price_currency = price_and_currency[position.asset_id]['currency']['ticker']
+        #     position.price = price_and_currency[position.asset_id]['price']
+        #     position.total_value_currency = requested_currency
+        #
+        #     if price_and_currency[position.asset_id]['currency']['ticker'] == requested_currency:
+        #         position.total_value = position.quantity_position * position.price
+        #     else:
+        #         exchange_rate_asset = Asset.objects.filter(
+        #             type_asset='CY',
+        #             currency_influence=position.asset.currency_base_settlement,
+        #             currency_base_settlement__ticker=requested_currency
+        #         ).first()
+        #         exchange_rate = get_price_and_currency(exchange_rate_asset.id)[exchange_rate_asset.id]['price']
+        #         position.total_value = position.quantity_position * position.price * exchange_rate
 
         return queryset
 
