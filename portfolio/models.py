@@ -169,9 +169,12 @@ class Structure(models.Model):
 class TargetWeight(models.Model):
     structure = models.ForeignKey(Structure, on_delete=models.CASCADE)
     asset_group = models.ForeignKey(AssetGroup, on_delete=models.CASCADE)
-    target_value = models.DecimalField(max_digits=5, decimal_places=2)
+    target_weight = models.DecimalField(max_digits=5, decimal_places=2)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.structure.name} - {self.target_value}%"
+        return f"{self.structure.name} - {self.target_weight}%"
+
+    class Meta:
+        unique_together = ('structure', 'asset_group')

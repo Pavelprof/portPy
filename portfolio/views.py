@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework_simplejwt.views import TokenRefreshView
 from django.db.models import Q, F
-from .models import AssetGroup
+from .models import AssetGroup, TargetWeight
 from .permissions import isAdminOrReadOnly
 from .serializers import *
 from .utils import get_price_and_currency, apply_assetgroup_filters
@@ -86,38 +86,89 @@ class PositionViewSet(viewsets.ReadOnlyModelViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         user = request.user
         requested_structure_id = request.query_params.get('structure_id')
-        requested_currency = Asset.objects.filter(ticker=self.request.GET.get('settlement_currency', 'USD')).first()
+        requested_currency = Asset.objects.filter(ticker=request.query_params.get('settlement_currency', 'USD')).first()
+        positions_with_groups = {}
+        overlapping_positions = []
         total_positions_value = 0
-        group_data = {}
-        group_targets = {}
-        other_group_fact_value = 0
+        group_data = []
+        ungrouped_positions = []
+
+        for group in AssetGroup.objects.filter(targetweight__structure_id=requested_structure_id):
+            group_queryset = queryset.filter(apply_assetgroup_filters(group.filters))
+            group_positions = []
+            group_value = 0
+
+            for position in group_queryset:
+                price_and_currency = get_price_and_currency(position.asset_id)
+
+                position_price_currency = price_and_currency[position.asset_id]['currency']['ticker']
+                position_price = price_and_currency[position.asset_id]['price']
+                position_value_currency = requested_currency.ticker
+
+                if position_price_currency == requested_currency:
+                    position_value = position.quantity_position * position_price
+                else:
+                    exchange_rate_asset = Asset.objects.filter(
+                        type_asset='CY',
+                        currency_influence=position.asset.currency_base_settlement,
+                        currency_base_settlement__ticker=requested_currency
+                    ).first()
+                    exchange_rate = get_price_and_currency(exchange_rate_asset.id)[exchange_rate_asset.id]['price']
+                    position_value = position.quantity_position * position_price * exchange_rate
+
+                position_data = {
+                    "position_id": position.id,
+                    "asset_id": position.asset_id,
+                    "ticker": position.asset.ticker,
+                    "exchange": position.asset.exchange,
+                    "quantity_position": position.quantity_position,
+                    "position_value": position_value,
+                    "position_value_currency": position_value_currency
+                }
+
+                group_value += position_value
+                group_positions.append(position_data)
+
+                if position.id not in positions_with_groups:
+                    position_data_for_overlap = position_data.copy()
+                    positions_with_groups[position.id] = position_data_for_overlap
+                    positions_with_groups[position.id]["groups"] = []
+                    total_positions_value += position_value
+
+                positions_with_groups[position.id]["groups"].append({
+                    "group_id": group.id,
+                    "group_name": group.name
+                })
+
+            group_data.append({
+                "group_id": group.id,
+                "group_name": group.name,
+                "target_weight": TargetWeight.objects.filter(structure=requested_structure_id,
+                                                             asset_group=group.id).first().target_weight,
+                "group_value": group_value,
+                "group_value_currency": requested_currency.ticker,
+                "group_positions": group_positions,
+            })
 
         for position in queryset:
-            price_and_currency = get_price_and_currency(position.asset_id)
-            price = price_and_currency[position.asset_id]['price']
+            if position.id not in positions_with_groups:
+                position_data = create_position_data(position)  # ToDo
+                ungrouped_positions.append(position_data)
 
-            position.price_currency = price_and_currency[position.asset_id]['currency']['ticker']
-            position.price = price
-            position.total_value_currency = requested_currency
+        group_data.append({
+            "group_id": None,
+            "group_name": "Ungrouped Assets",
+            "target_weight": 0,
+            "group_value": sum(pos["position_value"] for pos in ungrouped_positions),
+            "group_value_currency": requested_currency.ticker,
+            "group_positions": ungrouped_positions,
+        })
 
-            if price_and_currency[position.asset_id]['currency']['ticker'] == requested_currency:
-                position.total_value = position.quantity_position * position.price
-            else:
-                exchange_rate_asset = Asset.objects.filter(
-                    type_asset='CY',
-                    currency_influence=position.asset.currency_base_settlement,
-                    currency_base_settlement__ticker=requested_currency
-                ).first()
-                exchange_rate = get_price_and_currency(exchange_rate_asset.id)[exchange_rate_asset.id]['price']
-                position.total_value = position.quantity_position * position.price * exchange_rate
+        overlapping_positions = [
+            position_info for position_info in positions_with_groups.values() if len(position_info["groups"]) > 1
+        ]
 
-            total_positions_value += position.total_value
-
-        # for group in AssetGroup.objects.filter(targetweight__structure_id=requested_structure_id):
-        #     group_queryset = queryset.apply_assetgroup_filters(group.filters)
-
-
-        return Response(total_positions_value)
+        return Response([group_data, overlapping_positions])
 
 
     @action(detail=False, methods=['get'])

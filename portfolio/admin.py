@@ -41,8 +41,8 @@ class StructureAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
 class TargetWeightAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'target_value', 'structure', 'asset_group', 'created', 'updated')
-    list_display_links = ('pk', 'target_value',)
+    list_display = ('pk', 'target_weight', 'structure', 'asset_group', 'created', 'updated')
+    list_display_links = ('pk', 'target_weight',)
     search_fields = ('structure', 'asset_group',)
 
 

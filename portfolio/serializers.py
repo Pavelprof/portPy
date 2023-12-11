@@ -35,12 +35,12 @@ class PositionSerializer(serializers.ModelSerializer):
     asset = AssetSerializer(read_only=True)
     price = serializers.FloatField(read_only=True)
     price_currency = serializers.CharField(read_only=True)
-    total_value = serializers.FloatField(read_only=True)
-    total_value_currency = serializers.CharField(read_only=True)
+    position_value = serializers.FloatField(read_only=True)
+    position_value_currency = serializers.CharField(read_only=True)
 
     class Meta:
         model = Position
-        fields = ('id', 'asset', 'account', 'price', 'price_currency', 'quantity_position', 'total_value', 'total_value_currency')
+        fields = ('id', 'asset', 'account', 'price', 'price_currency', 'quantity_position', 'position_value', 'position_value_currency')
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -51,10 +51,10 @@ class PositionSerializer(serializers.ModelSerializer):
 
         representation['price'] = price
         representation['price_currency'] = price_and_currency[instance.asset_id]['currency']['ticker']
-        representation['total_value_currency'] = requested_currency.ticker
+        representation['position_value_currency'] = requested_currency.ticker
 
         if price_and_currency[instance.asset_id]['currency']['ticker'] == requested_currency:
-            representation['total_value'] = instance.quantity_position * price
+            representation['position_value'] = instance.quantity_position * price
         else:
             exchange_rate_asset = Asset.objects.filter(
                 type_asset='CY',
@@ -62,7 +62,7 @@ class PositionSerializer(serializers.ModelSerializer):
                 currency_base_settlement__ticker=requested_currency
             ).first()
             exchange_rate = get_price_and_currency(exchange_rate_asset.id)[exchange_rate_asset.id]['price']
-            representation['total_value'] = instance.quantity_position * price * exchange_rate
+            representation['position_value'] = instance.quantity_position * price * exchange_rate
 
         return representation
 
