@@ -69,7 +69,7 @@ class PositionViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context['requested_currency'] = Asset.objects.filter(ticker=self.request.GET.get('settlement_currency', 'USD')).first()
+        context['requested_structure_id'] = self.request.GET.get('settlement_currency', 1)
         return context
 
     def get_queryset(self):
@@ -84,9 +84,8 @@ class PositionViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=False, methods=['get'])
     def structure(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
-        user = request.user
-        requested_structure_id = request.query_params.get('structure_id')
-        requested_currency = Asset.objects.filter(ticker=request.query_params.get('settlement_currency', 'USD')).first()
+        requested_currency = Asset.objects.get(id=request.query_params.get('settlement_currency', 1))
+        requested_structure_id = request.query_params.get('structure_id', 1)
         positions_with_groups = {}
         overlapping_positions = []
         total_positions_value = 0
@@ -99,41 +98,31 @@ class PositionViewSet(viewsets.ReadOnlyModelViewSet):
             group_value = 0
 
             for position in group_queryset:
-                price_and_currency = get_price_and_currency(position.asset_id)
-
-                position_price_currency = price_and_currency[position.asset_id]['currency']['ticker']
-                position_price = price_and_currency[position.asset_id]['price']
-                position_value_currency = requested_currency.ticker
-
-                if position_price_currency == requested_currency:
-                    position_value = position.quantity_position * position_price
-                else:
-                    exchange_rate_asset = Asset.objects.filter(
-                        type_asset='CY',
-                        currency_influence=position.asset.currency_base_settlement,
-                        currency_base_settlement__ticker=requested_currency
-                    ).first()
-                    exchange_rate = get_price_and_currency(exchange_rate_asset.id)[exchange_rate_asset.id]['price']
-                    position_value = position.quantity_position * position_price * exchange_rate
+                price_and_currency = get_price_and_currency(position.asset_id, position.quantity_position, requested_currency.id, requested_currency.ticker)
 
                 position_data = {
                     "position_id": position.id,
-                    "asset_id": position.asset_id,
-                    "ticker": position.asset.ticker,
-                    "exchange": position.asset.exchange,
+                    "asset": {
+                        "id": position.asset_id,
+                        "ticker": position.asset.ticker,
+                        "exchange": position.asset.exchange,
+                        "asset_price": price_and_currency[position.asset_id]['price'],
+                        "asset_price_currency": price_and_currency[position.asset_id]['currency']['ticker'],
+                    },
                     "quantity_position": position.quantity_position,
-                    "position_value": position_value,
-                    "position_value_currency": position_value_currency
+                    "position_value": price_and_currency[position.asset_id]['value'],
+                    "position_value_currency": price_and_currency[position.asset_id]['value_currency']['ticker']
                 }
 
-                group_value += position_value
+                group_value += price_and_currency[position.asset_id]['value']
                 group_positions.append(position_data)
 
                 if position.id not in positions_with_groups:
+                    total_positions_value += price_and_currency[position.asset_id]['value']
+
                     position_data_for_overlap = position_data.copy()
                     positions_with_groups[position.id] = position_data_for_overlap
                     positions_with_groups[position.id]["groups"] = []
-                    total_positions_value += position_value
 
                 positions_with_groups[position.id]["groups"].append({
                     "group_id": group.id,
@@ -152,7 +141,26 @@ class PositionViewSet(viewsets.ReadOnlyModelViewSet):
 
         for position in queryset:
             if position.id not in positions_with_groups:
-                position_data = create_position_data(position)  # ToDo
+                price_and_currency = get_price_and_currency(position.asset_id, position.quantity_position,
+                                                            requested_currency.id, requested_currency.ticker)
+
+                position_data = {
+                    "position_id": position.id,
+                    "asset": {
+                        "id": position.asset_id,
+                        "ticker": position.asset.ticker,
+                        "exchange": position.asset.exchange,
+                        "asset_price": price_and_currency[position.asset_id]['price'],
+                        "asset_price_currency": price_and_currency[position.asset_id]['currency']['ticker'],
+                    },
+                    "quantity_position": position.quantity_position,
+                    "position_value": price_and_currency[position.asset_id]['value'],
+                    "position_value_currency": price_and_currency[position.asset_id]['value_currency']['ticker']
+                }
+
+                group_value += price_and_currency[position.asset_id]['value']
+                total_positions_value += price_and_currency[position.asset_id]['value']
+
                 ungrouped_positions.append(position_data)
 
         group_data.append({
@@ -164,11 +172,14 @@ class PositionViewSet(viewsets.ReadOnlyModelViewSet):
             "group_positions": ungrouped_positions,
         })
 
+        for group in group_data:
+            group["weight"] = group["group_value"] / total_positions_value * 100
+
         overlapping_positions = [
             position_info for position_info in positions_with_groups.values() if len(position_info["groups"]) > 1
         ]
 
-        return Response([group_data, overlapping_positions])
+        return Response({"groups": group_data, "overlapping_positions": overlapping_positions})
 
 
     @action(detail=False, methods=['get'])
