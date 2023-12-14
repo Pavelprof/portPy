@@ -35,18 +35,38 @@ def apply_assetgroup_filters(filters_json):
 
     return q_objects
 
-
-def get_price_and_currency(asset_id):
+def get_price_and_currency(asset_id, quantity=None, value_currency_id=None):
     price_and_currency_json = cache.get(f'asset_info:{asset_id}')
     if price_and_currency_json is not None:
-        return {asset_id: json.loads(price_and_currency_json)}
+        price_and_currency = json.loads(price_and_currency_json)
 
-    asset = Asset.objects.get(id=asset_id)
-    price_and_currency_data = fetch_prices_and_currencies([asset])
+    else:
+        asset = Asset.objects.get(id=asset_id)
+        price_and_currency = fetch_prices_and_currencies([asset])
+        price_and_currency = price_and_currency[asset_id]
+        cache.set(f'asset_info:{asset_id}', json.dumps(price_and_currency), 900)
 
-    cache.set(f'asset_info:{asset_id}', json.dumps(price_and_currency_data[asset_id]), 900)
+    if quantity is None or value_currency_id is None:
+        return {asset_id: price_and_currency}
 
-    return price_and_currency_data
+    asset_price = price_and_currency['price']
+    asset_currency_id = price_and_currency['currency']['id']
+
+    if asset_currency_id == value_currency_id:
+        value = quantity * asset_price
+    else:
+        exchange_rate_asset = Asset.objects.filter(type_asset='CY',
+            currency_influence=asset_currency_id,
+            currency_base_settlement=value_currency_id
+        ).first()
+        exchange_rate = get_price_and_currency(exchange_rate_asset.id)[exchange_rate_asset.id]["price"]
+        value = quantity * asset_price * exchange_rate
+
+    price_and_currency['quantity'] = quantity
+    price_and_currency['value'] = value
+    price_and_currency['value_currency'] = {'id': value_currency_id, 'ticker': Asset.objects.get(id=value_currency_id).ticker}
+
+    return {asset_id: price_and_currency}
 
 def fetch_prices_and_currencies(assets):
     prices_and_currencies = {}
