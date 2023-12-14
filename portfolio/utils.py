@@ -35,7 +35,7 @@ def apply_assetgroup_filters(filters_json):
 
     return q_objects
 
-def get_price_and_currency(asset_id, quantity=None, value_currency_id=None):
+def get_price_and_currency(asset_id, quantity=None, value_currency_id=None, value_currency_ticker=None):
     price_and_currency_json = cache.get(f'asset_info:{asset_id}')
     if price_and_currency_json is not None:
         price_and_currency = json.loads(price_and_currency_json)
@@ -64,7 +64,8 @@ def get_price_and_currency(asset_id, quantity=None, value_currency_id=None):
 
     price_and_currency['quantity'] = quantity
     price_and_currency['value'] = value
-    price_and_currency['value_currency'] = {'id': value_currency_id, 'ticker': Asset.objects.get(id=value_currency_id).ticker}
+    price_and_currency['value_currency'] = {'id': value_currency_id,
+                                            'ticker': value_currency_ticker if value_currency_ticker else Asset.objects.get(id=value_currency_id).ticker}
 
     return {asset_id: price_and_currency}
 
