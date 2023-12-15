@@ -45,7 +45,12 @@ class TargetWeightAdmin(admin.ModelAdmin):
     list_display_links = ('pk', 'target_weight',)
     search_fields = ('structure', 'asset_group',)
 
+class ExchangeAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'mic', 'name', 'created')
+    list_display_links = ('pk', 'mic', 'name')
 
+
+admin.site.register(Exchange, ExchangeAdmin)
 admin.site.register(TargetWeight, TargetWeightAdmin)
 admin.site.register(Structure, StructureAdmin)
 admin.site.register(AssetGroup, AssetGroupAdmin)

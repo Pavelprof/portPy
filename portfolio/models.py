@@ -23,15 +23,7 @@ class Asset(models.Model):
         (CURRENCY, "Currency"),
         (ETF, "Etf"),
         (OTHER, "Other"),]
-
-    class Exchanges(models.IntegerChoices):
-        OUT = 0 # It's for not pared currencies (USD, RUB, EUR...). Because they can have the same ticker as any asset at any axchange
-        MOEX = 1
-        SPB = 2
-        Binance = 3
-        NYSE = 4
-
-    ticker = models.CharField(max_length=20) # unique within one exchange ...clean()
+    ticker = models.CharField(max_length=20)
     isin = models.CharField(max_length=12, unique=True, null=True, blank=True)
     figi = models.CharField(max_length=12, unique=True, null=True, blank=True)
     name_asset = models.CharField(max_length=100, null=True, blank=True)
@@ -42,7 +34,7 @@ class Asset(models.Model):
     country_asset = CountryField(null=True, blank=True, default='US')
     type_asset = models.CharField(max_length=2, choices=TYPE_ASSET_CHOICES, default=OTHER)
     type_base_asset = models.CharField(max_length=2, choices=TYPE_ASSET_CHOICES, default=OTHER)
-    exchange = models.IntegerField(choices=Exchanges.choices, default=1)
+    exchange = models.ForeignKey('Exchange', related_name='+', on_delete=models.PROTECT)
     class_code = models.CharField(max_length=20, null=True, blank=True)
     bond_nominal = models.DecimalField(max_digits=40, decimal_places=15, null=True, blank=True)
     note = models.CharField(max_length=5000, null=True, blank=True)
@@ -52,15 +44,6 @@ class Asset(models.Model):
 
     def clean(self):
         super().clean()
-        existing_assets = self.__class__.objects.filter(ticker=self.ticker, exchange=self.exchange)
-        if self.pk:
-            existing_assets = existing_assets.exclude(pk=self.pk)
-        if existing_assets.exists():
-            raise ValidationError(
-                {
-                    "ticker": "The ticker must be unique within one exchange"
-                }
-            )
 
         if self.type_asset == self.BOND and self.bond_nominal is None:
             raise ValidationError({
@@ -73,6 +56,17 @@ class Asset(models.Model):
 
     def __str__(self):
         return self.ticker
+
+
+class Exchange(models.Model):
+    mic = models.CharField(max_length=4, null=True, blank=True) # Market Identifier Code
+    name = models.CharField(max_length=50)
+    country = CountryField(null=True, blank=True, default='US')
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
 
 class Transaction(models.Model):
     class Types_transaction(models.IntegerChoices):

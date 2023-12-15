@@ -49,6 +49,8 @@ def get_price_and_currency(asset_id, quantity=None, value_currency_id=None, valu
     if quantity is None or value_currency_id is None:
         return {asset_id: price_and_currency}
 
+    if 'price' not in price_and_currency:
+        print("data in cash without price!!!") # ToDo
     asset_price = price_and_currency['price']
     asset_currency_id = price_and_currency['currency']['id']
 
