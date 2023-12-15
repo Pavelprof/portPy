@@ -102,10 +102,13 @@ class PositionViewSet(viewsets.ReadOnlyModelViewSet):
 
                 position_data = {
                     "position_id": position.id,
+                    "exchange": {
+                        "id": position.exchange_id,
+                        "name": position.exchange.name,
+                    },
                     "asset": {
                         "id": position.asset_id,
                         "ticker": position.asset.ticker,
-                        "exchange": position.asset.exchange,
                         "asset_price": price_and_currency[position.asset_id]['price'],
                         "asset_price_currency": price_and_currency[position.asset_id]['currency']['ticker'],
                     },
@@ -146,10 +149,13 @@ class PositionViewSet(viewsets.ReadOnlyModelViewSet):
 
                 position_data = {
                     "position_id": position.id,
+                    "exchange": {
+                        "id": position.exchange_id,
+                        "name": position.exchange.name,
+                    },
                     "asset": {
                         "id": position.asset_id,
                         "ticker": position.asset.ticker,
-                        "exchange": position.asset.exchange,
                         "asset_price": price_and_currency[position.asset_id]['price'],
                         "asset_price_currency": price_and_currency[position.asset_id]['currency']['ticker'],
                     },

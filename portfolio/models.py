@@ -34,7 +34,6 @@ class Asset(models.Model):
     country_asset = CountryField(null=True, blank=True, default='US')
     type_asset = models.CharField(max_length=2, choices=TYPE_ASSET_CHOICES, default=OTHER)
     type_base_asset = models.CharField(max_length=2, choices=TYPE_ASSET_CHOICES, default=OTHER)
-    exchange = models.ForeignKey('Exchange', related_name='+', on_delete=models.PROTECT)
     class_code = models.CharField(max_length=20, null=True, blank=True)
     bond_nominal = models.DecimalField(max_digits=40, decimal_places=15, null=True, blank=True)
     note = models.CharField(max_length=5000, null=True, blank=True)
@@ -83,6 +82,7 @@ class Transaction(models.Model):
     asset_transaction = models.ForeignKey('Asset', on_delete=models.PROTECT)
     quantity_transaction = models.FloatField()
     type_transaction = models.IntegerField(choices=Types_transaction.choices, default=1)
+    exchange = models.ForeignKey('Exchange', related_name='+', on_delete=models.PROTECT)
     note = models.TextField(max_length=10000, null=True, blank=True)
     time_transaction = models.DateTimeField(default=timezone.now)
     created = models.DateTimeField(auto_now_add=True)
@@ -133,6 +133,7 @@ class Account(models.Model):
 class Position(models.Model):
     asset = models.ForeignKey('Asset', on_delete=models.PROTECT)
     account = models.ForeignKey('Account', on_delete=models.PROTECT)
+    exchange = models.ForeignKey('Exchange', related_name='+', on_delete=models.PROTECT)
     quantity_position = models.FloatField()
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
