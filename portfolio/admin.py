@@ -20,7 +20,7 @@ class AssetAdmin(ImportExportActionModelAdmin):
     list_editable = ('is_tradable',)
 
 class TransactionAdmin(ImportExportActionModelAdmin):
-    list_display = ('id', 'type_transaction', 'quantity_transaction', 'asset_transaction', 'account')
+    list_display = ('id', 'type_transaction', 'quantity_transaction', 'asset_transaction', 'account', "exchange")
     list_display_links = ('id', 'type_transaction')
     search_fields = ('type_transaction', 'asset_transaction__ticker__icontains')
 

@@ -8,7 +8,11 @@ def apply_assetgroup_filters(filters_json):
     q_objects = Q()
 
     for criterion in filters_json:
-        field = f'asset__{criterion.get("field")}'
+        if criterion['field'] in ['account', 'exchange']:
+            field = criterion.get("field")
+        else:
+            field = f'asset__{criterion.get("field")}'
+
         operation = criterion.get('operation')
         value = criterion.get('value')
 
