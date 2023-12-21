@@ -153,7 +153,7 @@ class AssetGroup(models.Model):
         return self.name
 
 class Structure(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=20)
     owner = models.ForeignKey('auth.User', on_delete=models.PROTECT)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)

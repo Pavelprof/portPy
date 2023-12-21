@@ -92,7 +92,7 @@ def fetch_prices_and_currencies(assets):
     crypto_assets = [asset for asset in assets if asset.type_asset == 'CO' and asset.id not in prices_and_currencies]
     if crypto_assets:
         crypto_tickers = [asset.ticker for asset in crypto_assets]
-        binance_data = get_quotes_from_binance(crypto_tickers)
+        binance_data = get_quotes_from_bс(crypto_tickers)
         for asset in crypto_assets:
             data = binance_data.get(asset.ticker, {})
             if data.get('price') not in [0, None]:
@@ -119,7 +119,7 @@ def fetch_prices_and_currencies(assets):
     remaining_assets = [asset for asset in assets if asset.id not in prices_and_currencies]
     if remaining_assets:
         ticker_list = [asset.ticker for asset in remaining_assets]
-        yfinance_data = get_quotes_from_yfinance(ticker_list)
+        yfinance_data = get_quotes_from_yf(ticker_list)
         for asset in remaining_assets:
             data = yfinance_data.get(asset.ticker, {})
             if data.get('price') not in [0, None]:

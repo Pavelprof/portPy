@@ -11,6 +11,7 @@ from .models import AssetGroup, TargetWeight
 from .permissions import isAdminOrReadOnly
 from .serializers import *
 from .utils import get_price_and_currency, apply_assetgroup_filters
+from decimal import Decimal
 
 
 class CustomTokenRefreshView(TokenRefreshView):
@@ -85,7 +86,7 @@ class PositionViewSet(viewsets.ReadOnlyModelViewSet):
     def structure(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         requested_currency = Asset.objects.get(id=request.query_params.get('settlement_currency', 1))
-        requested_structure_id = request.query_params.get('structure_id', 1)
+        requested_structure_id = request.query_params.get('structure', 1)
         positions_with_groups = {}
         overlapping_positions = []
         total_positions_value = 0
@@ -135,11 +136,11 @@ class PositionViewSet(viewsets.ReadOnlyModelViewSet):
             group_data.append({
                 "group_id": group.id,
                 "group_name": group.name,
-                "target_weight": TargetWeight.objects.filter(structure=requested_structure_id,
-                                                             asset_group=group.id).first().target_weight,
                 "group_value": group_value,
                 "group_value_currency": requested_currency.ticker,
                 "group_positions": group_positions,
+                "target_weight": TargetWeight.objects.filter(structure=requested_structure_id,
+                                                             asset_group=group.id).first().target_weight,
             })
 
         for position in queryset:
@@ -180,12 +181,13 @@ class PositionViewSet(viewsets.ReadOnlyModelViewSet):
 
         for group in group_data:
             group["weight"] = group["group_value"] / total_positions_value * 100
+            group["change"] = group["target_weight"] - Decimal(group["weight"])
 
         overlapping_positions = [
             position_info for position_info in positions_with_groups.values() if len(position_info["groups"]) > 1
         ]
 
-        return Response({"groups": group_data, "overlapping_positions": overlapping_positions})
+        return Response({"groups": group_data, "overlapping_positions": overlapping_positions, "total_positions":{"value": total_positions_value, "currency": requested_currency.ticker}})
 
 
     @action(detail=False, methods=['get'])
