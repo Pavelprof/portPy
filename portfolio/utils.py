@@ -53,8 +53,6 @@ def get_price_and_currency(asset_id, quantity=None, value_currency_id=None, valu
     if quantity is None or value_currency_id is None:
         return {asset_id: price_and_currency}
 
-    if 'price' not in price_and_currency:
-        print("data in cash without price!!!") # ToDo
     asset_price = price_and_currency['price']
     asset_currency_id = price_and_currency['currency']['id']
 
@@ -141,8 +139,11 @@ def fetch_prices_and_currencies(assets):
         update_asset_prices.apply_async(args=(remain_assets_ids,), countdown=60)
 
     for asset in assets:
-        if prices_and_currencies.get(asset.id, {}).get('currency') in [0, None]:
-            prices_and_currencies.setdefault(asset.id, {})['currency'] = {'id': asset.currency_base_settlement.id, 'ticker':asset.currency_base_settlement.ticker}
+        if asset.id in prices_and_currencies and prices_and_currencies[asset.id].get('currency') in [0, None]:
+            prices_and_currencies[asset.id]['currency'] = {
+                'id': asset.currency_base_settlement.id,
+                'ticker': asset.currency_base_settlement.ticker
+            }
 
         if asset.type_asset == 'BD':
             prices_and_currencies.setdefault(asset.id, {})['price'] *= (float(asset.bond_nominal)/100)
