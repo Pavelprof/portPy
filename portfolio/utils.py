@@ -148,5 +148,4 @@ def fetch_prices_and_currencies(assets):
         if asset.type_asset == 'BD':
             prices_and_currencies.setdefault(asset.id, {})['price'] *= (float(asset.bond_nominal)/100)
 
-
     return prices_and_currencies
