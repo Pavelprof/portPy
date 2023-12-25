@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework_simplejwt.views import TokenRefreshView
 from django.db.models import Q, F
-from .models import AssetGroup, TargetWeight
+from .models import AssetGroup, TargetWeight, Structure
 from .permissions import isAdminOrReadOnly
 from .serializers import *
 from .utils import get_price_and_currency, apply_assetgroup_filters
@@ -70,7 +70,7 @@ class PositionViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context['requested_structure_id'] = self.request.GET.get('settlement_currency', 1)
+        context['requested_currency_id'] = self.request.GET.get('settlement_currency', 1)
         return context
 
     def get_queryset(self):
@@ -192,7 +192,7 @@ class PositionViewSet(viewsets.ReadOnlyModelViewSet):
 
     @action(detail=False, methods=['get'])
     def unique_asset_types(self, request):
-        unique_types_query = self.get_queryset().values_list('asset__type_asset', flat=True).distinct()
+        unique_types_query = self.get_queryset().values_list('asset__type_base_asset', flat=True).distinct()
 
         type_display_mapping = dict(Asset.TYPE_ASSET_CHOICES)
 
@@ -210,6 +210,14 @@ class AccountViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         return Account.objects.filter(portfolio__user=user)
+
+class StructureViewSet(viewsets.ModelViewSet):
+    serializer_class = StructureSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        user = self.request.user
+        return Structure.objects.filter(Q(owner=user) | Q(isPublic=True))
 
 def pageNotFound(request, exception):
     return HttpResponseNotFound("<h1>Page not found</h1>")

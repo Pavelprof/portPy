@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from .models import Position, Asset, Transaction, Account
+from .models import Position, Asset, Transaction, Account, Structure
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -45,7 +45,7 @@ class PositionSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
 
-        requested_currency_id = self.context.get('requested_structure_id')
+        requested_currency_id = self.context.get('requested_currency_id')
         price_and_currency = get_price_and_currency(instance.asset_id, instance.quantity_position, requested_currency_id)
 
         representation['price'] = price_and_currency[instance.asset_id]['price']
@@ -71,3 +71,8 @@ class AccountSerializer(serializers.ModelSerializer):
 
     def get_country_account(self, obj):
         return obj.country_account.name
+
+class StructureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Structure
+        fields = ('id', 'name')

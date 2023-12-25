@@ -56,7 +56,6 @@ class Asset(models.Model):
     def __str__(self):
         return self.ticker
 
-
 class Exchange(models.Model):
     mic = models.CharField(max_length=4, null=True, blank=True) # Market Identifier Code
     name = models.CharField(max_length=50)
@@ -155,6 +154,7 @@ class AssetGroup(models.Model):
 class Structure(models.Model):
     name = models.CharField(max_length=20)
     owner = models.ForeignKey('auth.User', on_delete=models.PROTECT)
+    isPublic = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
