@@ -48,7 +48,6 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'django_celery_results',
     'django_celery_beat',
-    "debug_toolbar",
     'corsheaders',
 ]
 
@@ -60,7 +59,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
     'corsheaders.middleware.CorsMiddleware',
 ]
 
