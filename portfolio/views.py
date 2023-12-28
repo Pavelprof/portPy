@@ -165,7 +165,6 @@ class PositionViewSet(viewsets.ReadOnlyModelViewSet):
                     "position_value_currency": price_and_currency[position.asset_id]['value_currency']['ticker']
                 }
 
-                group_value += price_and_currency[position.asset_id]['value']
                 total_positions_value += price_and_currency[position.asset_id]['value']
 
                 ungrouped_positions.append(position_data)
