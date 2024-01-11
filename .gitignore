@@ -6,3 +6,4 @@
 /.env
 /portfolio/api_services.py
 /portfolio/update_scripts.py
+/information.log
