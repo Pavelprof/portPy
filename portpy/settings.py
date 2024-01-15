@@ -13,6 +13,7 @@ import os
 from dotenv import load_dotenv
 from datetime import timedelta
 from pathlib import Path
+from pythonjsonlogger.jsonlogger import JsonFormatter
 
 load_dotenv()
 
@@ -60,6 +61,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     'corsheaders.middleware.CorsMiddleware',
+    'portfolio.logging_middleware.LoggingMiddleware',
 ]
 
 LOGGING = {
@@ -67,21 +69,21 @@ LOGGING = {
     'disable_existing_loggers': False,
 
     'formatters': {
-        'main_format': {
-            'format': "{asctime} - {levelname} - {module} - {filename} - {message}",
-            'style': '{',
+        'json_formatter': {
+            '()': JsonFormatter,
+            'format': '%(levelname)s %(asctime)s %(message)d',
         },
     },
 
     'handlers': {
         'console': {
           'class': 'logging.StreamHandler',
-          'formatter': 'main_format',
+          'formatter': 'json_formatter',
         },
 
         'file': {
           'class': 'logging.FileHandler',
-          'formatter': 'main_format',
+          'formatter': 'json_formatter',
           'filename': 'information.log',
         },
     },
@@ -192,6 +194,8 @@ CACHES = {
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 30,
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',

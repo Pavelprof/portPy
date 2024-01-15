@@ -1,5 +1,4 @@
 import django_filters
-import logging
 from django_filters import rest_framework as filters
 from django.http import HttpResponseNotFound
 from rest_framework import generics, viewsets
@@ -13,8 +12,6 @@ from .permissions import isAdminOrReadOnly
 from .serializers import *
 from .utils import get_price_and_currency, apply_assetgroup_filters
 from decimal import Decimal
-
-logger = logging.getLogger('main')
 
 class CustomTokenRefreshView(TokenRefreshView):
     serializer_class = CustomTokenRefreshSerializer
@@ -48,7 +45,6 @@ class TransactionViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        logger.info(f"Get transactions queryset for user {user.username}")
         return Transaction.objects.filter(account__portfolio__user=user)
 
     @action(detail=False, methods=['get'])
@@ -78,7 +74,6 @@ class PositionViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        logger.info(f"Get positions queryset for user {user.username}")
         queryset = Position.objects.filter(
             Q(quantity_position__gt=0) | Q(quantity_position__lt=0),
             account__portfolio__user=user
